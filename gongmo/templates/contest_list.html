@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Contest List</title>
+</head>
+<body>
+    <h1>Contest List</h1>
+    <ul>
+        {% for contest in contests %}
+        <li>
+            <h2>{{ contest.title }}</h2>
+            <img src="{{ contest.photo }}" alt="Contest Photo">
+            <p>Field: {{ contest.field }}</p>
+            <p>Eligibility: {{ contest.eligibility }}</p>
+            <p>Organizer: {{ contest.organizer }}</p>
+            <p>Sponsorship: {{ contest.sponsorship }}</p>
+            <p>Application Period: {{ contest.application_period }}</p>
+            <p>Total Prize: {{ contest.prize_total }}</p>
+            <p>First Prize: {{ contest.prize_first }}</p>
+            <p>Website: <a href="{{ contest.website }}">{{ contest.website }}</a></p>
+            <p>Details: {{ contest.details }}</p>
+        </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
