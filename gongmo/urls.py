@@ -4,5 +4,6 @@ from . import views
 app_name = 'gongmo'
 
 urlpatterns = [
-    path('api/contest-list/', views.ContestListAPIView.as_view(), name='contest_list_api'),
+    path('acontest-list/', views.ContestListAPIView.as_view(), name='contest_list'),
+    path('contest-list/', views.contest_list, name='contest_list'),
 ]
