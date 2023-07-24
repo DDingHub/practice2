@@ -3,6 +3,9 @@ import re
 import requests
 from bs4 import BeautifulSoup
 from .models import Contest
+from .serializers import ContestSerializer
+from rest_framework.views import APIView
+from rest_framework.response import Response
 
 url = "https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gp="
 
@@ -79,3 +82,11 @@ def contest_list(request):
     save_contest_data()  # 크롤링 데이터 저장
     contests = Contest.objects.all()
     return render(request, 'contest_list.html', {'contests': contests})
+
+class ContestListAPIView(APIView):
+    def get(self, request):
+        # 크롤링 함수 실행 (주기적으로 크롤링하여 데이터 저장)
+        save_contest_data()
+        contests = Contest.objects.all()
+        serializer = ContestSerializer(contests, many=True)
+        return Response(serializer.data)
