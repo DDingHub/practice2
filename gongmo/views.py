@@ -4,7 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 from django.contrib.auth.models import User
 from .models import *
-from .models import *
+from .forms import *
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
@@ -275,7 +275,7 @@ def removeMember(request, teamPk):
         member = get_object_or_404(Member, pk=member_pk)
 
         # 팀 제작자인 경우 자신을 제외하고 팀원을 퇴출시킴
-        if request.user == team.created_by and not request.user == member.user:
+        if request.user == team.created_by and request.user != member.user:
             member.delete()
             messages.success(request, f"{member.user.username} 님을 팀에서 퇴출시켰습니다.")
         else:
@@ -289,7 +289,7 @@ def approveJoinRequest(request, notification_pk):
     notification = get_object_or_404(Notification, pk=notification_pk)
 
     # 팀 제작자인지 확인
-    if not request.user == notification.team.created_by:
+    if request.user != notification.team.created_by:
         return HttpResponseForbidden()
 
     # 알림 삭제
