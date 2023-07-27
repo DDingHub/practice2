@@ -3,10 +3,6 @@ import re
 import requests
 from bs4 import BeautifulSoup
 from .models import Contest
-from .serializers import ContestSerializer
-from rest_framework.views import APIView
-from rest_framework.response import Response
-
 
 url = "https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gp="
 
@@ -63,33 +59,23 @@ def save_contest_data():
                             comm_desc_text = ' '.join(comm_desc_text)
                         dicttt['상세정보'] = comm_desc_text
 
-               # 중복된 데이터 검사 및 제거
-                    if Contest.objects.filter(title=dicttt.get('제목')).exists():
-                        continue  # 이미 저장된 제목인 경우 건너뜁니다.
-                    else:
-                        contest = Contest.objects.create(
-                            title=dicttt.get('제목'),
-                            photo=dicttt.get('사진'),
-                            field=dicttt.get('분야'),
-                            eligibility=dicttt.get('응모대상'),
-                            organizer=dicttt.get('주최/주관'),
-                            sponsorship=dicttt.get('후원/협찬'),
-                            application_period=dicttt.get('접수기간'),
-                            prize_total=dicttt.get('총 상금'),
-                            prize_first=dicttt.get('1등 상금'),
-                            website=dicttt.get('홈페이지'),
-                            details=dicttt.get('상세정보')
-                        )
-                        contest.save()
+                    contest = Contest.objects.create(
+                        title=dicttt.get('제목'),
+                        photo=dicttt.get('사진'),
+                        field=dicttt.get('분야'),
+                        eligibility=dicttt.get('응모대상'),
+                        organizer=dicttt.get('주최/주관'),
+                        sponsorship=dicttt.get('후원/협찬'),
+                        application_period=dicttt.get('접수기간'),
+                        prize_total=dicttt.get('총 상금'),
+                        prize_first=dicttt.get('1등 상금'),
+                        website=dicttt.get('홈페이지'),
+                        details=dicttt.get('상세정보')
+                    )
+                    contest.save()
                     
 
 def contest_list(request):
     save_contest_data()  # 크롤링 데이터 저장
     contests = Contest.objects.all()
     return render(request, 'contest_list.html', {'contests': contests})
-
-class ContestListAPIView(APIView):
-    def get(self, request):
-        contests = Contest.objects.all()
-        serializer = ContestSerializer(contests, many=True)
-        return Response(serializer.data)
