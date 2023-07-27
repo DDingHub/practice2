@@ -26,7 +26,7 @@ class Team(models.Model):
     teamname = models.CharField(max_length=100,null=True)
     call = models.CharField(max_length=100,null=True)
     detail = models.TextField(null=True)
-    gongmo = models.ForeignKey(Contest, on_delete=models.CASCADE)
+    contest = models.ForeignKey(Contest, on_delete=models.CASCADE)
     jickgoons = models.ManyToManyField(Jickgoon, through="Member")
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     dev_capacity = models.PositiveIntegerField(default=0)
