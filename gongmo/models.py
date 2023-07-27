@@ -46,10 +46,6 @@ class Member(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
     jickgoon = models.ForeignKey(Jickgoon, on_delete=models.CASCADE)
 
-class Bookmark(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    team = models.ForeignKey(Team, on_delete=models.CASCADE)
-
 class Notification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     team = models.ForeignKey(Team, on_delete=models.CASCADE)

@@ -80,33 +80,22 @@ def save_contest_data():
                         website=dicttt.get('홈페이지'),
                         details=dicttt.get('상세정보')
                     )
-                    contest.save()
-                    
+                    contest.save()    
 
+#공모전 목록 보여주기
 def contest_list(request):
     save_contest_data()  # 크롤링 데이터 저장
     contests = Contest.objects.all()
     return render(request, 'contest_list.html', {'contests': contests})
 
-def index(request):
-    contests = Contest.objects.all()
-    context = {"contests" : contests}
-    return render(request, "ddingapp/index.html", context)
+#공모전 세부사항 보여주기
+def contestDetail(request, contestPk):
+    contest = get_object_or_404(Contest, pk=contestPk)
+    teams = Team.objects.filter(contest=contest)
+    context = {"contest": contest, "teams":teams}
+    return render(request, "ddingapp/contestDetail.html", context)
 
-def contestCreate(request):
-    if request.method == "POST":
-        contestForm = ContestForm(request.POST)
-        if contestForm.is_valid():
-            contestPost = contestForm.save(commit = False)
-            contestPost.save()
-            return redirect("index")
-        else:
-            messages.error(request, "폼이 유효하지 않습니다")
-    else:
-        contestForm = ContestForm()
-    context = {"contestForm" : contestForm}
-    return render(request, "ddingapp/contestCreate.html", context)
-
+#팀 생성
 @login_required
 def teamCreate(request, contestPk):
     contest = get_object_or_404(Contest, pk=contestPk)
@@ -126,18 +115,11 @@ def teamCreate(request, contestPk):
     context = {"teamForm" : teamForm}
     return render(request, "ddingapp/teamCreate.html", context)
 
-def contestDetail(request, contestPk):
-    contest = get_object_or_404(Contest, pk=contestPk)
-    teams = Team.objects.filter(contest=contest)
-    context = {"contest": contest, "teams":teams}
-    return render(request, "ddingapp/contestDetail.html", context)
-
+#팀 세부사항 보여주기
 @login_required
 def teamDetail(request, contestPk, teamPk):
     team = get_object_or_404(Team, pk=teamPk)
     jickgoons = team.jickgoons.all()
-    bookmarks = team.bookmark_set.all()
-    
     member = team.member_set.filter(user=request.user).first()
     if member:
         member_jickgoon = member.jickgoon.name
@@ -150,7 +132,6 @@ def teamDetail(request, contestPk, teamPk):
         'team': team,
         'jickgoons': jickgoons,
         'member_jickgoon': member_jickgoon,
-        'bookmarks' : bookmarks,
         'dev_capacity': team.get_dev_capacity(),
         'plan_capacity': team.get_plan_capacity(),
         'design_capacity': team.get_design_capacity(),
@@ -158,22 +139,12 @@ def teamDetail(request, contestPk, teamPk):
     }
     return render(request, 'ddingapp/teamDetail.html', context)
 
-
-def contestDelete(request, contestPk):
-    contestPost = get_object_or_404(Contest, pk=contestPk)
-    contestPost.delete()
-    return redirect("index")
-
-def teamDelete(request, contestPk, teamPk):
-    teamPost = get_object_or_404(Team, pk=teamPk)
-    teamPost.delete()
-    return redirect("contestDetail", contestPk=contestPk)
-
+#팀 참가, 신청하기
 @login_required
 def teamJoin(request, contestPk, teamPk):
     team = get_object_or_404(Team, pk=teamPk)
     jickgoons = Jickgoon.objects.filter(name__in=['기획', '개발', '디자인'])
-    
+
     if request.method == 'POST':
         selected_jickgoons_ids = request.POST.getlist('jickgoons')
         team.member_set.filter(user=request.user).delete()
@@ -189,7 +160,6 @@ def teamJoin(request, contestPk, teamPk):
             '기획': team.member_set.filter(jickgoon__name='기획').count(),
             '디자인': team.member_set.filter(jickgoon__name='디자인').count(),
         }       
-
 
         if is_team_creator:  # 팀 제작자인 경우 바로 가입
             for jickgoon_id in selected_jickgoons_ids:
@@ -219,6 +189,7 @@ def teamJoin(request, contestPk, teamPk):
     }
     return render(request, 'ddingapp/teamJoin.html', context)
 
+#마이페이지, 알림, 팀 수락 거절
 @login_required
 def mypage(request, user_id):
     user = get_object_or_404(User, pk=user_id)
@@ -235,37 +206,7 @@ def mypage(request, user_id):
         }
     return render(request, 'ddingapp/mypage.html', context)
 
-@login_required
-def bookmark(request, teamPk):
-    team = get_object_or_404(Team, pk=teamPk)
-    user = request.user
-    bookmark, created = Bookmark.objects.get_or_create(user=user, team=team)
-
-    if not created:
-        bookmark.delete()
-
-    return redirect('teamDetail', contestPk=team.contest.pk, teamPk=teamPk)
-
-@login_required
-def leaveTeam(request, teamPk):
-    team = get_object_or_404(Team, pk=teamPk)
-    try:
-        member = Member.objects.get(user=request.user, team=team)
-        member.delete()
-    except Member.DoesNotExist:
-        pass 
-    return redirect(reverse('mypage', args=[request.user.id]))
-
-@login_required
-def deleteNotification(request, notification_pk):
-    notification = get_object_or_404(Notification, pk=notification_pk)
-
-    if request.method == 'POST':
-        notification.delete()
-        return redirect(reverse('mypage', args=[request.user.id]))
-
-    return HttpResponseForbidden()
-
+#팀원 내보내기
 @login_required
 def removeMember(request, teamPk):
     team = get_object_or_404(Team, pk=teamPk)
@@ -274,7 +215,6 @@ def removeMember(request, teamPk):
         member_pk = request.POST.get('memberPk')
         member = get_object_or_404(Member, pk=member_pk)
 
-        # 팀 제작자인 경우 자신을 제외하고 팀원을 퇴출시킴
         if request.user == team.created_by and request.user != member.user:
             member.delete()
             messages.success(request, f"{member.user.username} 님을 팀에서 퇴출시켰습니다.")
@@ -283,7 +223,7 @@ def removeMember(request, teamPk):
 
     return redirect('teamDetail', contestPk=team.contest.pk, teamPk=teamPk)
 
-
+#팀원 수락
 @login_required
 def approveJoinRequest(request, notification_pk):
     notification = get_object_or_404(Notification, pk=notification_pk)
@@ -301,7 +241,7 @@ def approveJoinRequest(request, notification_pk):
     messages.success(request, f"{notification.user.username} 님의 팀 참가 신청을 승인하였습니다.")
     return redirect('teamDetail', contestPk=notification.team.contest.pk, teamPk=notification.team.pk)
 
-
+#팀원 거절
 def rejectJoinRequest(request, notification_pk):
     notification = get_object_or_404(Notification, pk=notification_pk)
     
