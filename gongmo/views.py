@@ -193,13 +193,11 @@ def teamJoin(request, contestPk, teamPk):
 @login_required
 def mypage(request, user_id):
     user = get_object_or_404(User, pk=user_id)
-    bookmarks = Bookmark.objects.filter(user=user)
     teams = Team.objects.filter(member__user=user)
     teamsteams = Team.objects.filter(created_by=user)
     notifications = Notification.objects.filter(team__created_by=user)
     context = {
         'user': user,
-        'bookmarks': bookmarks,
         'teams':teams,
         'teamsteams': teamsteams,
         'notifications': notifications,
