@@ -11,6 +11,9 @@ from django.urls import reverse
 from django.utils.html import escape
 from django.utils import timezone
 from django.http import HttpResponseForbidden
+from .serializers import *
+from rest_framework.views import APIView
+from rest_framework.response import Response
 
 url = "https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gp="
 
@@ -92,12 +95,28 @@ def contest_list(request):
     contests = Contest.objects.all()
     return render(request, 'contest_list.html', {'contests': contests})
 
+class ContestListAPIView(APIView):
+    def get(self, request):
+        # 크롤링 함수 실행 (주기적으로 크롤링하여 데이터 저장)
+        save_contest_data()
+        contests = Contest.objects.all()
+        serializer = ContestSerializer(contests, many=True)
+        return Response(serializer.data)
+
 #공모전 세부사항 보여주기
 def contestDetail(request, contestPk):
     contest = get_object_or_404(Contest, pk=contestPk)
     teams = Team.objects.filter(contest=contest)
     context = {"contest": contest, "teams":teams}
     return render(request, "ddingapp/contestDetail.html", context)
+
+class ContestDetailAPIView(APIView):
+    def get(self, request, contestPk):
+        contest = get_object_or_404(Contest, pk=contestPk)
+        teams = Team.objects.filter(contest=contest)
+        contest_serializer = ContestSerializer(contest)
+        team_serializer = TeamSerializer(teams, many=True)
+        return Response({'contest': contest_serializer.data, 'teams': team_serializer.data})
 
 #팀 생성
 @login_required

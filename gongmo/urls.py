@@ -5,7 +5,9 @@ app_name = 'gongmo'
 
 urlpatterns = [
     path('contest-list/', views.contest_list, name='contest_list'),
-    path("<int:contestPk>/", views.contestDetail, name="contestDetail"),
+    path('acontest-list/', views.ContestListAPIView.as_view(), name='contest_list_api'),
+    # path("<int:contestPk>/", views.contestDetail, name="contestDetail"),
+    path("<int:contestPk>/", views.ContestDetailAPIView.as_view(), name="contestDetail"),
     path("<int:contestPk>/teamCreate/", views.teamCreate, name="teamCreate"),
     path("<int:contestPk>/<int:teamPk>/", views.teamDetail, name="teamDetail"),
     path('<int:contestPk>/<int:teamPk>/teamJoin/', views.teamJoin, name='teamJoin'),
