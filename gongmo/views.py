@@ -67,20 +67,24 @@ def save_contest_data():
                             comm_desc_text = ' '.join(comm_desc_text)
                         dicttt['상세정보'] = comm_desc_text
 
-                    contest = Contest.objects.create(
-                        title=dicttt.get('제목'),
-                        photo=dicttt.get('사진'),
-                        field=dicttt.get('분야'),
-                        eligibility=dicttt.get('응모대상'),
-                        organizer=dicttt.get('주최/주관'),
-                        sponsorship=dicttt.get('후원/협찬'),
-                        application_period=dicttt.get('접수기간'),
-                        prize_total=dicttt.get('총 상금'),
-                        prize_first=dicttt.get('1등 상금'),
-                        website=dicttt.get('홈페이지'),
-                        details=dicttt.get('상세정보')
-                    )
-                    contest.save()    
+                    # 중복된 데이터 검사 및 제거
+                    if Contest.objects.filter(title=dicttt.get('제목')).exists():
+                        continue  # 이미 저장된 제목인 경우 건너뜁니다.
+                    else:
+                        contest = Contest.objects.create(
+                            title=dicttt.get('제목'),
+                            photo=dicttt.get('사진'),
+                            field=dicttt.get('분야'),
+                            eligibility=dicttt.get('응모대상'),
+                            organizer=dicttt.get('주최/주관'),
+                            sponsorship=dicttt.get('후원/협찬'),
+                            application_period=dicttt.get('접수기간'),
+                            prize_total=dicttt.get('총 상금'),
+                            prize_first=dicttt.get('1등 상금'),
+                            website=dicttt.get('홈페이지'),
+                            details=dicttt.get('상세정보')
+                        )
+                        contest.save()
 
 #공모전 목록 보여주기
 def contest_list(request):
