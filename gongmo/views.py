@@ -14,6 +14,7 @@ from django.http import HttpResponseForbidden
 from .serializers import *
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework import status
 
 url = "https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gp="
 
@@ -118,11 +119,8 @@ class ContestDetailAPIView(APIView):
         team_serializer = TeamSerializer(teams, many=True)
         return Response({'contest': contest_serializer.data, 'teams': team_serializer.data})
 
-#팀 생성
-@login_required
-def teamCreate(request, contestPk):
-    contest = get_object_or_404(Contest, pk=contestPk)
-    if request.method == "POST":
+    def post(self, request, contestPk):
+        contest = get_object_or_404(Contest, pk=contestPk)
         teamForm = TeamForm(request.POST)
         if teamForm.is_valid():
             teamPost = teamForm.save(commit=False)
@@ -130,13 +128,9 @@ def teamCreate(request, contestPk):
             teamPost.created_by = request.user
             teamPost.save()
             teamForm.save_m2m()
-            return redirect("contestDetail", contestPk=contest.pk)
+            return Response({'message': '팀이 생성되었습니다.'}, status=status.HTTP_201_CREATED)
         else:
-            messages.error(request, "폼이 유효하지 않습니다")
-    else:
-        teamForm = TeamForm()
-    context = {"teamForm" : teamForm}
-    return render(request, "ddingapp/teamCreate.html", context)
+            return Response({'error': '폼이 유효하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
 
 #팀 세부사항 보여주기
 @login_required
