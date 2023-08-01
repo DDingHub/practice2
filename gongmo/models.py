@@ -29,17 +29,17 @@ class Team(models.Model):
     contest = models.ForeignKey(Contest, on_delete=models.CASCADE)
     jickgoons = models.ManyToManyField(Jickgoon, through="Member")
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
-    dev_capacity = models.PositiveIntegerField(default=0)
-    plan_capacity = models.PositiveIntegerField(default=0)
-    design_capacity = models.PositiveIntegerField(default=0)
-    def get_dev_capacity(self):
-        return self.member_set.filter(jickgoon__name='개발').count()
+    # dev_capacity = models.PositiveIntegerField(default=0)
+    # plan_capacity = models.PositiveIntegerField(default=0)
+    # design_capacity = models.PositiveIntegerField(default=0)
+    # def get_dev_capacity(self):
+    #     return self.member_set.filter(jickgoon__name='개발').count()
 
-    def get_plan_capacity(self):
-        return self.member_set.filter(jickgoon__name='기획').count()
+    # def get_plan_capacity(self):
+    #     return self.member_set.filter(jickgoon__name='기획').count()
 
-    def get_design_capacity(self):
-        return self.member_set.filter(jickgoon__name='디자인').count()
+    # def get_design_capacity(self):
+    #     return self.member_set.filter(jickgoon__name='디자인').count()
 
 class Member(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

@@ -15,6 +15,7 @@ from .serializers import *
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.parsers import JSONParser
 
 url = "https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gp="
 
@@ -120,17 +121,21 @@ class ContestDetailAPIView(APIView):
         return Response({'contest': contest_serializer.data, 'teams': team_serializer.data})
 
     def post(self, request, contestPk):
+        # contest = get_object_or_404(Contest, pk=contestPk)
+        # teamForm = TeamForm(request.POST)
         contest = get_object_or_404(Contest, pk=contestPk)
-        teamForm = TeamForm(request.POST)
+        data = JSONParser().parse(request)
+        teamForm = TeamForm(data)
+        teamForm.instance.contest = contest
         if teamForm.is_valid():
             teamPost = teamForm.save(commit=False)
-            teamPost.contest = contest
-            teamPost.created_by = request.user
+            # teamPost.contest = request.contest
+            # teamPost.created_by = request.user
             teamPost.save()
             teamForm.save_m2m()
             return Response({'message': '팀이 생성되었습니다.'}, status=status.HTTP_201_CREATED)
         else:
-            return Response({'error': '폼이 유효하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': teamForm.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 #팀 세부사항 보여주기
 @login_required
