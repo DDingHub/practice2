@@ -1,21 +1,23 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from .models import *
+from .forms import *
+from .serializers import *
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.hashers import make_password
 import re
 import requests
 from bs4 import BeautifulSoup
-from django.contrib.auth.models import User
-from .models import *
-from .forms import *
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.utils.html import escape
 from django.utils import timezone
 from django.http import HttpResponseForbidden
-from .serializers import *
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.parsers import JSONParser
+from django.core.exceptions import ObjectDoesNotExist
 
 url = "https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gp="
 
@@ -92,182 +94,196 @@ def save_contest_data():
                         contest.save()
 
 #공모전 목록 보여주기
-def contest_list(request):
-    save_contest_data()  # 크롤링 데이터 저장
-    contests = Contest.objects.all()
-    return render(request, 'contest_list.html', {'contests': contests})
-
 class ContestListAPIView(APIView):
     def get(self, request):
-        # 크롤링 함수 실행 (주기적으로 크롤링하여 데이터 저장)
         save_contest_data()
         contests = Contest.objects.all()
         serializer = ContestSerializer(contests, many=True)
         return Response(serializer.data)
 
-#공모전 세부사항 보여주기
-def contestDetail(request, contestPk):
-    contest = get_object_or_404(Contest, pk=contestPk)
-    teams = Team.objects.filter(contest=contest)
-    context = {"contest": contest, "teams":teams}
-    return render(request, "ddingapp/contestDetail.html", context)
-
+#공모전 세부페이지
 class ContestDetailAPIView(APIView):
+    #공모전 정보와 팀 정보 가져오기
     def get(self, request, contestPk):
         contest = get_object_or_404(Contest, pk=contestPk)
         teams = Team.objects.filter(contest=contest)
         contest_serializer = ContestSerializer(contest)
         team_serializer = TeamSerializer(teams, many=True)
         return Response({'contest': contest_serializer.data, 'teams': team_serializer.data})
-
+    #팀 생성하기
     def post(self, request, contestPk):
-        # contest = get_object_or_404(Contest, pk=contestPk)
-        # teamForm = TeamForm(request.POST)
         contest = get_object_or_404(Contest, pk=contestPk)
-        data = JSONParser().parse(request)
-        teamForm = TeamForm(data)
-        teamForm.instance.contest = contest
-        if teamForm.is_valid():
-            teamPost = teamForm.save(commit=False)
-            # teamPost.contest = request.contest
-            # teamPost.created_by = request.user
-            teamPost.save()
-            teamForm.save_m2m()
-            return Response({'message': '팀이 생성되었습니다.'}, status=status.HTTP_201_CREATED)
+        data = request.data
+        if request.user.is_authenticated:
+            teamForm = TeamForm(data)
+            teamForm.instance.contest = contest
+            if teamForm.is_valid():
+                teamPost = teamForm.save(commit=False)
+                teamPost.created_by = request.user
+                teamPost.dev_capacity = teamForm.cleaned_data['dev_capacity']
+                teamPost.plan_capacity = teamForm.cleaned_data['plan_capacity']
+                teamPost.design_capacity = teamForm.cleaned_data['design_capacity']
+                teamPost.save()
+                teamForm.save_m2m()
+                return Response({'message': '팀이 생성되었습니다.'}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({'error': teamForm.errors}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response({'error': teamForm.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': '로그인한 사용자만 팀을 생성할 수 있습니다.'}, status=status.HTTP_401_UNAUTHORIZED)
 
-#팀 세부사항 보여주기
-@login_required
-def teamDetail(request, contestPk, teamPk):
-    team = get_object_or_404(Team, pk=teamPk)
-    jickgoons = team.jickgoons.all()
-    member = team.member_set.filter(user=request.user).first()
-    if member:
-        member_jickgoon = member.jickgoon.name
-    else:
-        member_jickgoon = None
+#팀 세부페이지
+class TeamDetailAPIView(APIView):
+    #팀 세부페이지 가져오기
+    def get(self, request, contestPk, teamPk):
+        team = get_object_or_404(Team, pk=teamPk)
+        serializer = TeamSerializer(team)
+        return Response(serializer.data)
 
-    is_team_creator = team.created_by == request.user
+    #팀 지원하기
+    def post(self, request, contestPk, teamPk):
+        team = get_object_or_404(Team, pk=teamPk)
+        data = request.data
+        serializer = TeamSerializer(data=data)
 
-    context = {
-        'team': team,
-        'jickgoons': jickgoons,
-        'member_jickgoon': member_jickgoon,
-        'dev_capacity': team.get_dev_capacity(),
-        'plan_capacity': team.get_plan_capacity(),
-        'design_capacity': team.get_design_capacity(),
-        'is_team_creator': is_team_creator,
-    }
-    return render(request, 'ddingapp/teamDetail.html', context)
-
-#팀 참가, 신청하기
-@login_required
-def teamJoin(request, contestPk, teamPk):
-    team = get_object_or_404(Team, pk=teamPk)
-    jickgoons = Jickgoon.objects.filter(name__in=['기획', '개발', '디자인'])
-
-    if request.method == 'POST':
-        selected_jickgoons_ids = request.POST.getlist('jickgoons')
-        team.member_set.filter(user=request.user).delete()
+        if serializer.is_valid():
+            selected_jickgoons_ids = serializer.validated_data.get('jickgoons')
+            team.member_set.filter(user=request.user).delete()
         
-        is_team_creator = team.created_by == request.user
+            is_team_creator = team.created_by == request.user
 
-        dev_capacity = team.dev_capacity
-        plan_capacity = team.plan_capacity
-        design_capacity = team.design_capacity
+            dev_capacity = team.dev
+            plan_capacity = team.plan
+            design_capacity = team.design
 
-        member_counts = {
-            '개발': team.member_set.filter(jickgoon__name='개발').count(),
-            '기획': team.member_set.filter(jickgoon__name='기획').count(),
-            '디자인': team.member_set.filter(jickgoon__name='디자인').count(),
-        }       
+            member_counts = {
+                '개발': team.member_set.filter(jickgoon__name='개발').count(),
+                '기획': team.member_set.filter(jickgoon__name='기획').count(),
+                '디자인': team.member_set.filter(jickgoon__name='디자인').count(),
+            }       
 
-        if is_team_creator:  # 팀 제작자인 경우 바로 가입
-            for jickgoon_id in selected_jickgoons_ids:
-                jickgoon = get_object_or_404(Jickgoon, id=jickgoon_id)
-                Member.objects.create(user=request.user, team=team, jickgoon=jickgoon)
-                member_counts[jickgoon.name] += 1
+            if is_team_creator:
+                for jickgoon_id in selected_jickgoons_ids:
+                    if jickgoon_id == 1:  # 개발 직군 ID
+                        team.dev += 1
+                    elif jickgoon_id == 2:  # 기획 직군 ID
+                        team.plan += 1
+                    elif jickgoon_id == 3:  # 디자인 직군 ID
+                        team.design += 1
+                    team.save()
 
-            return redirect('teamDetail', contestPk=contestPk, teamPk=teamPk)
-        else:  # 팀 제작자가 아닌 경우 알림 생성 후 대기
-            for jickgoon_id in selected_jickgoons_ids:
-                jickgoon = get_object_or_404(Jickgoon, id=jickgoon_id)
-                if (jickgoon.name == '개발' and member_counts['개발'] >= dev_capacity) or \
-                   (jickgoon.name == '기획' and member_counts['기획'] >= plan_capacity) or \
-                   (jickgoon.name == '디자인' and member_counts['디자인'] >= design_capacity):
-                    messages.error(request, f"{jickgoon.name} 직군의 참가 인원 수가 이미 초과되었습니다.")
-                    return redirect('teamDetail', contestPk=contestPk, teamPk=teamPk)
+                return Response({'message': '팀에 가입되었습니다.'}, status=status.HTTP_201_CREATED)
+            else:
+                for jickgoon_id in selected_jickgoons_ids:
+                    if (jickgoon_id == 1 and member_counts['개발'] >= dev_capacity) or \
+                       (jickgoon_id == 2 and member_counts['기획'] >= plan_capacity) or \
+                       (jickgoon_id == 3 and member_counts['디자인'] >= design_capacity):
+                        return Response({'error': f"해당 직군의 참가 인원 수가 이미 초과되었습니다."}, status=status.HTTP_400_BAD_REQUEST)
                 
-                notification_message = f"{escape(request.user.username)} 님이 {escape(team.name)} 팀에 {escape(jickgoon.name)} 직군으로 참여 신청하였습니다. ({timezone.now().strftime('%Y-%m-%d %H:%M')})"
-                notification = Notification.objects.create(user=request.user, team=team, jickgoon=jickgoon, message=notification_message)
+                    notification_message = f"{escape(request.user.username)} 님이 {escape(team.name)} 팀에 참여 신청하였습니다. ({timezone.now().strftime('%Y-%m-%d %H:%M')})"
+                    notification = Notification.objects.create(user=request.user, team=team, jickgoon_id=jickgoon_id, message=notification_message)
 
-            messages.success(request, "팀 제작자의 승인이 필요한 팀 신청이 완료되었습니다. 승인 후 팀에 가입됩니다.")
-            return redirect('teamDetail', contestPk=contestPk, teamPk=teamPk)
-    
-    context = {
-        'team': team,
-        'jickgoons': jickgoons,
-    }
-    return render(request, 'ddingapp/teamJoin.html', context)
-
-#마이페이지, 알림, 팀 수락 거절
-@login_required
-def mypage(request, user_id):
-    user = get_object_or_404(User, pk=user_id)
-    teams = Team.objects.filter(member__user=user)
-    teamsteams = Team.objects.filter(created_by=user)
-    notifications = Notification.objects.filter(team__created_by=user)
-    context = {
-        'user': user,
-        'teams':teams,
-        'teamsteams': teamsteams,
-        'notifications': notifications,
-        }
-    return render(request, 'ddingapp/mypage.html', context)
-
-#팀원 내보내기
-@login_required
-def removeMember(request, teamPk):
-    team = get_object_or_404(Team, pk=teamPk)
-
-    if request.method == 'POST':
-        member_pk = request.POST.get('memberPk')
-        member = get_object_or_404(Member, pk=member_pk)
-
-        if request.user == team.created_by and request.user != member.user:
-            member.delete()
-            messages.success(request, f"{member.user.username} 님을 팀에서 퇴출시켰습니다.")
+                return Response({'message': '팀 가입 요청이 완료되었습니다. 팀 제작자의 승인을 기다려주세요.'}, status=status.HTTP_201_CREATED)
         else:
-            messages.error(request, "팀 제작자만 팀원을 퇴출시킬 수 있습니다.")
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    return redirect('teamDetail', contestPk=team.contest.pk, teamPk=teamPk)
 
-#팀원 수락
-@login_required
-def approveJoinRequest(request, notification_pk):
-    notification = get_object_or_404(Notification, pk=notification_pk)
+# 회원가입
+class SignUpAPIView(APIView):
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
 
-    # 팀 제작자인지 확인
-    if request.user != notification.team.created_by:
-        return HttpResponseForbidden()
+        if not username or not password:
+            return Response({'error': '사용자 이름과 비밀번호를 입력해주세요.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    # 알림 삭제
-    notification.delete()
+        if User.objects.filter(username=username).exists():
+            return Response({'error': '이미 존재하는 사용자 이름입니다.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    # 해당 사용자를 팀에 추가
-    Member.objects.create(user=notification.user, team=notification.team, jickgoon=notification.jickgoon)
+        user = User.objects.create(username=username, password=make_password(password))
+        user.save()
+        return Response({'message': '회원가입이 완료되었습니다.'}, status=status.HTTP_201_CREATED)
 
-    messages.success(request, f"{notification.user.username} 님의 팀 참가 신청을 승인하였습니다.")
-    return redirect('teamDetail', contestPk=notification.team.contest.pk, teamPk=notification.team.pk)
+# 로그인
+class LoginAPIView(APIView):
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
 
-#팀원 거절
-def rejectJoinRequest(request, notification_pk):
-    notification = get_object_or_404(Notification, pk=notification_pk)
+        if not username or not password:
+            return Response({'error': '사용자 이름과 비밀번호를 입력해주세요.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = authenticate(username=username, password=password)
+
+        if not user:
+            return Response({'error': '잘못된 사용자 이름 또는 비밀번호입니다.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        login(request, user)
+        return Response({'message': '로그인이 완료되었습니다.'}, status=status.HTTP_200_OK)
+
+# 로그아웃
+class LogoutAPIView(APIView):
+    def post(self, request):
+        logout(request)
+        return Response({'message': '로그아웃이 완료되었습니다.'}, status=status.HTTP_200_OK)
+
+
+# #마이페이지, 알림, 팀 수락 거절
+# @login_required
+# def mypage(request, user_id):
+#     user = get_object_or_404(User, pk=user_id)
+#     teams = Team.objects.filter(member__user=user)
+#     teamsteams = Team.objects.filter(created_by=user)
+#     notifications = Notification.objects.filter(team__created_by=user)
+#     context = {
+#         'user': user,
+#         'teams':teams,
+#         'teamsteams': teamsteams,
+#         'notifications': notifications,
+#         }
+#     return render(request, 'ddingapp/mypage.html', context)
+
+# #팀원 내보내기
+# @login_required
+# def removeMember(request, teamPk):
+#     team = get_object_or_404(Team, pk=teamPk)
+
+#     if request.method == 'POST':
+#         member_pk = request.POST.get('memberPk')
+#         member = get_object_or_404(Member, pk=member_pk)
+
+#         if request.user == team.created_by and request.user != member.user:
+#             member.delete()
+#             messages.success(request, f"{member.user.username} 님을 팀에서 퇴출시켰습니다.")
+#         else:
+#             messages.error(request, "팀 제작자만 팀원을 퇴출시킬 수 있습니다.")
+
+#     return redirect('teamDetail', contestPk=team.contest.pk, teamPk=teamPk)
+
+# #팀원 수락
+# @login_required
+# def approveJoinRequest(request, notification_pk):
+#     notification = get_object_or_404(Notification, pk=notification_pk)
+
+#     # 팀 제작자인지 확인
+#     if request.user != notification.team.created_by:
+#         return HttpResponseForbidden()
+
+#     # 알림 삭제
+#     notification.delete()
+
+#     # 해당 사용자를 팀에 추가
+#     Member.objects.create(user=notification.user, team=notification.team, jickgoon=notification.jickgoon)
+
+#     messages.success(request, f"{notification.user.username} 님의 팀 참가 신청을 승인하였습니다.")
+#     return redirect('teamDetail', contestPk=notification.team.contest.pk, teamPk=notification.team.pk)
+
+# #팀원 거절
+# def rejectJoinRequest(request, notification_pk):
+#     notification = get_object_or_404(Notification, pk=notification_pk)
     
-    if notification.team.created_by == request.user:
-        notification.delete()
-    else:
-        return HttpResponseForbidden()
+#     if notification.team.created_by == request.user:
+#         notification.delete()
+#     else:
+#         return HttpResponseForbidden()
     
-    return redirect(reverse('mypage', args=[request.user.id]))
+#     return redirect(reverse('mypage', args=[request.user.id]))
