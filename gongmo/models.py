@@ -18,11 +18,6 @@ class Contest(models.Model):
     def __str__(self):
         return self.title
 
-# class Jickgoon(models.Model):
-#     dev_capacity = models.PositiveIntegerField(default=0)
-#     plan_capacity = models.PositiveIntegerField(default=0)
-#     design_capacity = models.PositiveIntegerField(default=0)
-    
 class Team(models.Model):
     name = models.CharField(max_length=50)
     teamname = models.CharField(max_length=100,null=True)
@@ -30,16 +25,20 @@ class Team(models.Model):
     detail = models.TextField(null=True)
     contest = models.ForeignKey(Contest, on_delete=models.CASCADE)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
-    # jickgoons = models.ManyToManyField(Jickgoon)
+    dev_capacity = models.PositiveIntegerField(default=0)
+    plan_capacity = models.PositiveIntegerField(default=0)
+    design_capacity = models.PositiveIntegerField(default=0)
     dev = models.PositiveIntegerField(default=0)
     plan = models.PositiveIntegerField(default=0)
     design = models.PositiveIntegerField(default=0)
+    jickgoon_type = models.CharField(max_length=50, blank=True, choices=[('dev', '개발'), ('plan', '기획'), ('design', '디자인')])
 
 
+class Member(models.Model):
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name = "members")
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    jickgoon = models.CharField(max_length=50, choices=[('dev', '개발'), ('plan', '기획'), ('design', '디자인')])
 
-# class Member(models.Model):
-#     user = models.ForeignKey(User, on_delete=models.CASCADE)
-#     team = models.ForeignKey(Team, on_delete=models.CASCADE)
 
 # class Notification(models.Model):
 #     user = models.ForeignKey(User, on_delete=models.CASCADE)

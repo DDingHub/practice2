@@ -130,41 +130,49 @@ class ContestDetailAPIView(APIView):
 #팀 세부페이지
 class TeamDetailAPIView(APIView):
     #팀 세부페이지 가져오기
-    def get(self, request, teamPk, contestPk,jickgoonPk):
+    def get(self, request, teamPk, contestPk):
         team = get_object_or_404(Team, pk=teamPk)
-        serializer = TeamSerializer(team)
-        return Response(serializer.data)
+        members = Member.objects.filter(team=team)
+
+        dev_members = members.filter(jickgoon='dev')
+        plan_members = members.filter(jickgoon='plan')
+        design_members = members.filter(jickgoon='design')
+
+        dev_member_data = [{'user': member.user.username, 'jickgoon': member.jickgoon} for member in dev_members]
+        plan_member_data = [{'user': member.user.username, 'jickgoon': member.jickgoon} for member in plan_members]
+        design_member_data = [{'user': member.user.username, 'jickgoon': member.jickgoon} for member in design_members]
+
+        team_serializer = TeamSerializer(team)
+        data = {
+            **team_serializer.data,
+            'dev_members': dev_member_data,
+            'plan_members': plan_member_data,
+            'design_members': design_member_data,
+        }
+
+        return Response(data)
 
     #팀 지원하기
-    def post(self, request, teamPk, jickgoonPk, contestPk):
+    def post(self, request, teamPk, contestPk):
         team = get_object_or_404(Team, pk=teamPk)
-        jickgoon = get_object_or_404(Jickgoon, pk=jickgoonPk)
+        jickgoon_type = request.data.get("jickgoon_type")
 
-        if team.dev <= jickgoon.dev_capacity and team.plan <= jickgoon.plan_capacity and team.design <= jickgoon.design_capacity:
-            # Check if the team still has available slots for the selected jickgoon
-            if team.dev < jickgoon.dev_capacity:
-                team.dev += 1
-            elif team.plan < jickgoon.plan_capacity:
-                team.plan += 1
-            elif team.design < jickgoon.design_capacity:
-                team.design += 1
-            else:
-                return Response({"error": "The selected jickgoon capacity is already full for this team."},
-                                status=status.HTTP_400_BAD_REQUEST)
-
-            # Save the team object with the updated jickgoon capacity
-            team.save()
-            
-            # Save the application information
-            team.created_by = request.user
-            team.jickgoons.add(jickgoon)
-            team.save()
-            
-            return Response({"message": "You have successfully applied to the team."},
-                            status=status.HTTP_201_CREATED)
+        if jickgoon_type == "dev" and team.dev < team.dev_capacity:
+            team.dev += 1
+        elif jickgoon_type == "plan" and team.plan < team.plan_capacity:
+            team.plan += 1
+        elif jickgoon_type == "design" and team.design < team.design_capacity:
+            team.design += 1
         else:
-            return Response({"error": "The selected jickgoon capacity is not available for this team."},
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "The selected jickgoon capacity is already full for this team."},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+        Member.objects.create(team=team, user=request.user, jickgoon=jickgoon_type)
+        team.save()
+
+        return Response({"message": "You have successfully applied to the team."},
+                    status=status.HTTP_201_CREATED)
+
 
 # 회원가입
 class SignUpAPIView(APIView):
