@@ -18,10 +18,10 @@ class Contest(models.Model):
     def __str__(self):
         return self.title
 
-class Jickgoon(models.Model):
-    dev_capacity = models.PositiveIntegerField(default=0)
-    plan_capacity = models.PositiveIntegerField(default=0)
-    design_capacity = models.PositiveIntegerField(default=0)
+# class Jickgoon(models.Model):
+#     dev_capacity = models.PositiveIntegerField(default=0)
+#     plan_capacity = models.PositiveIntegerField(default=0)
+#     design_capacity = models.PositiveIntegerField(default=0)
     
 class Team(models.Model):
     name = models.CharField(max_length=50)
@@ -30,7 +30,7 @@ class Team(models.Model):
     detail = models.TextField(null=True)
     contest = models.ForeignKey(Contest, on_delete=models.CASCADE)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
-    jickgoons = models.ManyToManyField(Jickgoon)
+    # jickgoons = models.ManyToManyField(Jickgoon)
     dev = models.PositiveIntegerField(default=0)
     plan = models.PositiveIntegerField(default=0)
     design = models.PositiveIntegerField(default=0)

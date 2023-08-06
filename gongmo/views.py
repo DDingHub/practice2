@@ -114,27 +114,17 @@ class ContestDetailAPIView(APIView):
     def post(self, request, contestPk):
         contest = get_object_or_404(Contest, pk=contestPk)
         team_form = TeamForm(request.data)
-        jickgoon_form = JickgoonForm(request.data)
 
-        if team_form.is_valid() and jickgoon_form.is_valid():
+        if team_form.is_valid():
             team = team_form.save(commit=False)
             team.contest = contest
             team.created_by = request.user
             team.save()
 
-            jickgoon = Jickgoon.objects.create(
-                dev_capacity=jickgoon_form.cleaned_data["dev_capacity"],
-                plan_capacity=jickgoon_form.cleaned_data["plan_capacity"],
-                design_capacity=jickgoon_form.cleaned_data["design_capacity"],
-            )
-            jickgoon.save()
-            team.jickgoons.add(jickgoon)
-
             return Response({'message': '팀이 생성되었습니다.'}, status=status.HTTP_201_CREATED)
         else:
             errors = {}
             errors.update(team_form.errors)
-            errors.update(jickgoon_form.errors)
             return Response({'error': errors}, status=status.HTTP_400_BAD_REQUEST)
 
 #팀 세부페이지
@@ -150,7 +140,7 @@ class TeamDetailAPIView(APIView):
         team = get_object_or_404(Team, pk=teamPk)
         jickgoon = get_object_or_404(Jickgoon, pk=jickgoonPk)
 
-        if jickgoon.dev_capacity <= team.dev and jickgoon.plan_capacity <= team.plan and jickgoon.design_capacity <= team.design:
+        if team.dev <= jickgoon.dev_capacity and team.plan <= jickgoon.plan_capacity and team.design <= jickgoon.design_capacity:
             # Check if the team still has available slots for the selected jickgoon
             if team.dev < jickgoon.dev_capacity:
                 team.dev += 1
@@ -161,15 +151,9 @@ class TeamDetailAPIView(APIView):
             else:
                 return Response({"error": "The selected jickgoon capacity is already full for this team."},
                                 status=status.HTTP_400_BAD_REQUEST)
-            
+
             # Save the team object with the updated jickgoon capacity
             team.save()
-            
-            # Update the jickgoon's capacity and save it
-            jickgoon.dev_capacity -= 1
-            jickgoon.plan_capacity -= 1
-            jickgoon.design_capacity -= 1
-            jickgoon.save()
             
             # Save the application information
             team.created_by = request.user
@@ -181,7 +165,6 @@ class TeamDetailAPIView(APIView):
         else:
             return Response({"error": "The selected jickgoon capacity is not available for this team."},
                             status=status.HTTP_400_BAD_REQUEST)
-
 
 # 회원가입
 class SignUpAPIView(APIView):

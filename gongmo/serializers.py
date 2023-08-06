@@ -6,13 +6,12 @@ class ContestSerializer(serializers.ModelSerializer):
         model = Contest
         fields = '__all__'
 
-class JickgoonSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Jickgoon
-        fields = '__all__'
+# class JickgoonSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Jickgoon
+#         fields = '__all__'
         
 class TeamSerializer(serializers.ModelSerializer):
-    jickgoons = JickgoonSerializer(many=True)
     class Meta:
         model = Team
         fields = '__all__'
