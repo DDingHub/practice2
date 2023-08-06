@@ -19,11 +19,9 @@ class Contest(models.Model):
         return self.title
 
 class Jickgoon(models.Model):
-    name = models.CharField(max_length=100)
-    capacity = models.PositiveIntegerField(default=0)
-
-    def __str__(self):
-        return self.name
+    dev_capacity = models.PositiveIntegerField(default=0)
+    plan_capacity = models.PositiveIntegerField(default=0)
+    design_capacity = models.PositiveIntegerField(default=0)
     
 class Team(models.Model):
     name = models.CharField(max_length=50)
@@ -32,7 +30,10 @@ class Team(models.Model):
     detail = models.TextField(null=True)
     contest = models.ForeignKey(Contest, on_delete=models.CASCADE)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
-    jickgoons = models.ManyToManyField(Jickgoon) #Jickgoon 모델과의 관계를 나타냄. ManyToMany관계로써 Team객체는 여러개의 Jickgoon과 연결될 수 있다.
+    jickgoons = models.ManyToManyField(Jickgoon)
+    dev = models.PositiveIntegerField(default=0)
+    plan = models.PositiveIntegerField(default=0)
+    design = models.PositiveIntegerField(default=0)
 
 
 

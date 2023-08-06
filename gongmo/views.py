@@ -113,78 +113,74 @@ class ContestDetailAPIView(APIView):
     #팀 생성하기
     def post(self, request, contestPk):
         contest = get_object_or_404(Contest, pk=contestPk)
-        data = request.data
-        if request.user.is_authenticated:
-            teamForm = TeamForm(data)
-            teamForm.instance.contest = contest
-            if teamForm.is_valid():
-                teamPost = teamForm.save(commit=False)
-                teamPost.created_by = request.user
-                teamPost.dev_capacity = teamForm.cleaned_data['dev_capacity']
-                teamPost.plan_capacity = teamForm.cleaned_data['plan_capacity']
-                teamPost.design_capacity = teamForm.cleaned_data['design_capacity']
-                teamPost.save()
-                teamForm.save_m2m()
-                return Response({'message': '팀이 생성되었습니다.'}, status=status.HTTP_201_CREATED)
-            else:
-                return Response({'error': teamForm.errors}, status=status.HTTP_400_BAD_REQUEST)
+        team_form = TeamForm(request.data)
+        jickgoon_form = JickgoonForm(request.data)
+
+        if team_form.is_valid() and jickgoon_form.is_valid():
+            team = team_form.save(commit=False)
+            team.contest = contest
+            team.created_by = request.user
+            team.save()
+
+            jickgoon = Jickgoon.objects.create(
+                dev_capacity=jickgoon_form.cleaned_data["dev_capacity"],
+                plan_capacity=jickgoon_form.cleaned_data["plan_capacity"],
+                design_capacity=jickgoon_form.cleaned_data["design_capacity"],
+            )
+            jickgoon.save()
+            team.jickgoons.add(jickgoon)
+
+            return Response({'message': '팀이 생성되었습니다.'}, status=status.HTTP_201_CREATED)
         else:
-            return Response({'error': '로그인한 사용자만 팀을 생성할 수 있습니다.'}, status=status.HTTP_401_UNAUTHORIZED)
+            errors = {}
+            errors.update(team_form.errors)
+            errors.update(jickgoon_form.errors)
+            return Response({'error': errors}, status=status.HTTP_400_BAD_REQUEST)
 
 #팀 세부페이지
 class TeamDetailAPIView(APIView):
     #팀 세부페이지 가져오기
-    def get(self, request, contestPk, teamPk):
+    def get(self, request, teamPk, contestPk,jickgoonPk):
         team = get_object_or_404(Team, pk=teamPk)
         serializer = TeamSerializer(team)
         return Response(serializer.data)
 
     #팀 지원하기
-    def post(self, request, contestPk, teamPk):
+    def post(self, request, teamPk, jickgoonPk, contestPk):
         team = get_object_or_404(Team, pk=teamPk)
-        data = request.data
-        serializer = TeamSerializer(data=data)
+        jickgoon = get_object_or_404(Jickgoon, pk=jickgoonPk)
 
-        if serializer.is_valid():
-            selected_jickgoons_ids = serializer.validated_data.get('jickgoons')
-            team.member_set.filter(user=request.user).delete()
-        
-            is_team_creator = team.created_by == request.user
-
-            dev_capacity = team.dev
-            plan_capacity = team.plan
-            design_capacity = team.design
-
-            member_counts = {
-                '개발': team.member_set.filter(jickgoon__name='개발').count(),
-                '기획': team.member_set.filter(jickgoon__name='기획').count(),
-                '디자인': team.member_set.filter(jickgoon__name='디자인').count(),
-            }       
-
-            if is_team_creator:
-                for jickgoon_id in selected_jickgoons_ids:
-                    if jickgoon_id == 1:  # 개발 직군 ID
-                        team.dev += 1
-                    elif jickgoon_id == 2:  # 기획 직군 ID
-                        team.plan += 1
-                    elif jickgoon_id == 3:  # 디자인 직군 ID
-                        team.design += 1
-                    team.save()
-
-                return Response({'message': '팀에 가입되었습니다.'}, status=status.HTTP_201_CREATED)
+        if jickgoon.dev_capacity <= team.dev and jickgoon.plan_capacity <= team.plan and jickgoon.design_capacity <= team.design:
+            # Check if the team still has available slots for the selected jickgoon
+            if team.dev < jickgoon.dev_capacity:
+                team.dev += 1
+            elif team.plan < jickgoon.plan_capacity:
+                team.plan += 1
+            elif team.design < jickgoon.design_capacity:
+                team.design += 1
             else:
-                for jickgoon_id in selected_jickgoons_ids:
-                    if (jickgoon_id == 1 and member_counts['개발'] >= dev_capacity) or \
-                       (jickgoon_id == 2 and member_counts['기획'] >= plan_capacity) or \
-                       (jickgoon_id == 3 and member_counts['디자인'] >= design_capacity):
-                        return Response({'error': f"해당 직군의 참가 인원 수가 이미 초과되었습니다."}, status=status.HTTP_400_BAD_REQUEST)
-                
-                    notification_message = f"{escape(request.user.username)} 님이 {escape(team.name)} 팀에 참여 신청하였습니다. ({timezone.now().strftime('%Y-%m-%d %H:%M')})"
-                    notification = Notification.objects.create(user=request.user, team=team, jickgoon_id=jickgoon_id, message=notification_message)
-
-                return Response({'message': '팀 가입 요청이 완료되었습니다. 팀 제작자의 승인을 기다려주세요.'}, status=status.HTTP_201_CREATED)
+                return Response({"error": "The selected jickgoon capacity is already full for this team."},
+                                status=status.HTTP_400_BAD_REQUEST)
+            
+            # Save the team object with the updated jickgoon capacity
+            team.save()
+            
+            # Update the jickgoon's capacity and save it
+            jickgoon.dev_capacity -= 1
+            jickgoon.plan_capacity -= 1
+            jickgoon.design_capacity -= 1
+            jickgoon.save()
+            
+            # Save the application information
+            team.created_by = request.user
+            team.jickgoons.add(jickgoon)
+            team.save()
+            
+            return Response({"message": "You have successfully applied to the team."},
+                            status=status.HTTP_201_CREATED)
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "The selected jickgoon capacity is not available for this team."},
+                            status=status.HTTP_400_BAD_REQUEST)
 
 
 # 회원가입
