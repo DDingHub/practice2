@@ -17,6 +17,8 @@ urlpatterns = [
     path("<int:contestPk>/", views.ContestDetailAPIView.as_view(), name="contestDetail"),
     #팀 세부페이지(팀 지원)
     path("<int:contestPk>/<int:teamPk>/", views.TeamDetailAPIView.as_view(), name="teamDetail"),
+    # MY팀(지원한 팀, 먄든 팀)
+    path("mypage/<int:userPk>/", views.MyTeamAPIView.as_view(), name="mypage")
     # path('mypage/<int:user_id>/', views.mypage, name='mypage'),
     # path('<int:teamPk>/removeMember/', views.removeMember, name='removeMember'),
     # path('approveJoinRequest/<int:notification_pk>/', views.approveJoinRequest, name='approveJoinRequest'),

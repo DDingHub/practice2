@@ -214,6 +214,14 @@ class LogoutAPIView(APIView):
         return Response({'message': '로그아웃이 완료되었습니다.'}, status=status.HTTP_200_OK)
 
 
+class MyTeamAPIView(APIView):
+    def get(self, reqeust, userPk):
+        teams_created = Team.objects.filter(created_by=userPk)
+        teams_joined = Team.objects.filter(members__user=userPk)
+        teams_created_data = [{'team_id': team.id} for team in teams_created]
+        teams_joined_data = [{'team_id': team.id} for team in teams_joined]
+
+        return Response({"my_teams_created": teams_created_data, "my_teams_joined": teams_joined_data}, status=status.HTTP_200_OK)
 # #마이페이지, 알림, 팀 수락 거절
 # @login_required
 # def mypage(request, user_id):
