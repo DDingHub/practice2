@@ -13,3 +13,7 @@ pip install requests
 # 팀 가입
 
 {"jickgoon_type" : "dev"} {"jickgoon_type" : "plan"} {"jickgoon_type" : "design"}
+
+# 멤버 내보내기
+
+{"team_id": 35,"membername": "p","jickgoon_type": "dev"}

@@ -222,6 +222,76 @@ class MyTeamAPIView(APIView):
         teams_joined_data = [{'team_id': team.id} for team in teams_joined]
 
         return Response({"my_teams_created": teams_created_data, "my_teams_joined": teams_joined_data}, status=status.HTTP_200_OK)
+
+class TeamManagementAPIView(APIView):
+    def get(self, request, userPk):
+        teams_created = Team.objects.filter(created_by=userPk)
+
+        team_data = []
+        for team in teams_created:
+            dev_members = team.members.filter(jickgoon='dev')
+            plan_members = team.members.filter(jickgoon='plan')
+            design_members = team.members.filter(jickgoon='design')
+
+            dev_member_data = [{'user': member.user.username, 'jickgoon': member.jickgoon} for member in dev_members]
+            plan_member_data = [{'user': member.user.username, 'jickgoon': member.jickgoon} for member in plan_members]
+            design_member_data = [{'user': member.user.username, 'jickgoon': member.jickgoon} for member in design_members]
+
+            team_data.append({
+                'id': team.id,
+                'dev_members': dev_member_data,
+                'plan_members': plan_member_data,
+                'design_members': design_member_data,
+            })
+
+        return Response(team_data, status=status.HTTP_200_OK)
+
+    def post(self, request, userPk):
+        user = get_object_or_404(User, pk=userPk)
+
+        # Get the request data
+        team_id = request.data.get("team_id")
+        membername = request.data.get("membername")
+        jickgoon_type = request.data.get("jickgoon_type")
+
+        try:
+            # Get the team object
+            team = Team.objects.get(pk=team_id)
+
+            # Check if the user is the creator of the team
+            if team.created_by == user:
+                # Find the member with the given membername and jickgoon_type in the team
+                try:
+                    member = Member.objects.get(team=team, user__username=membername, jickgoon=jickgoon_type)
+                except Member.DoesNotExist:
+                    return Response({"error": "The specified member with the given jickgoon_type was not found in the team."},
+                                    status=status.HTTP_404_NOT_FOUND)
+
+                # Update the team capacity
+                if jickgoon_type == "dev":
+                    team.dev -= 1
+                elif jickgoon_type == "plan":
+                    team.plan -= 1
+                elif jickgoon_type == "design":
+                    team.design -= 1
+
+                # Save the updated team
+                team.save()
+
+                # Remove the member from the team
+                member.delete()
+
+                return Response({"message": "The member has been removed from the team successfully."},
+                                status=status.HTTP_200_OK)
+            else:
+                return Response({"error": "You are not authorized to remove a member from this team."},
+                                status=status.HTTP_401_UNAUTHORIZED)
+        except Team.DoesNotExist:
+            return Response({"error": "The specified team does not exist."},
+                            status=status.HTTP_404_NOT_FOUND)
+
+
+    
 # #마이페이지, 알림, 팀 수락 거절
 # @login_required
 # def mypage(request, user_id):
