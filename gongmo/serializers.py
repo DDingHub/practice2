@@ -12,10 +12,6 @@ class MemberSerializer(serializers.ModelSerializer):
         model = Member
         fields = '__all__'
 
-    # user = serializers.SerializerMethodField()
-        # fields = ['user']
-    # def get_user(self, member):
-    #     return member.user.username
 
 class TeamSerializer(serializers.ModelSerializer):
     dev_members = serializers.SerializerMethodField()

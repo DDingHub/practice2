@@ -15,11 +15,3 @@ class TeamForm(forms.ModelForm):
             "design_capacity" : "디자인"
         }
         
-# class JickgoonForm(forms.ModelForm):
-#     dev_capacity = forms.IntegerField(min_value=0, initial=0, label="개발 직군 정원")
-#     plan_capacity = forms.IntegerField(min_value=0, initial=0, label="기획 직군 정원")
-#     design_capacity = forms.IntegerField(min_value=0, initial=0, label="디자인 직군 정원")
-
-#     class Meta:
-#         model = Jickgoon
-#         fields = ['dev_capacity', 'plan_capacity', 'design_capacity']
