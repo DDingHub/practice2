@@ -133,14 +133,13 @@ class TeamDetailAPIView(APIView):
     def get(self, request, teamPk, contestPk):
         team = get_object_or_404(Team, pk=teamPk)
         members = Member.objects.filter(team=team)
-
         dev_members = members.filter(jickgoon='dev')
         plan_members = members.filter(jickgoon='plan')
         design_members = members.filter(jickgoon='design')
 
-        dev_member_data = [{'user': member.user.username, 'jickgoon': member.jickgoon} for member in dev_members]
-        plan_member_data = [{'user': member.user.username, 'jickgoon': member.jickgoon} for member in plan_members]
-        design_member_data = [{'user': member.user.username, 'jickgoon': member.jickgoon} for member in design_members]
+        dev_member_data = [{'user': member.user.username} for member in dev_members]
+        plan_member_data = [{'user': member.user.username} for member in plan_members]
+        design_member_data = [{'user': member.user.username} for member in design_members]
 
         team_serializer = TeamSerializer(team)
         data = {
@@ -157,22 +156,24 @@ class TeamDetailAPIView(APIView):
         team = get_object_or_404(Team, pk=teamPk)
         jickgoon_type = request.data.get("jickgoon_type")
 
-        if jickgoon_type == "dev" and team.dev < team.dev_capacity:
-            team.dev += 1
-        elif jickgoon_type == "plan" and team.plan < team.plan_capacity:
-            team.plan += 1
-        elif jickgoon_type == "design" and team.design < team.design_capacity:
-            team.design += 1
-        else:
-            return Response({"error": "The selected jickgoon capacity is already full for this team."},
-                        status=status.HTTP_400_BAD_REQUEST)
 
-        Member.objects.create(team=team, user=request.user, jickgoon=jickgoon_type)
-        team.save()
+        if jickgoon_type not in ['dev', 'plan', 'design']:
+            return Response({"error": "유효하지 않은 직군입니다."},
+                            status=status.HTTP_400_BAD_REQUEST)
+        
+        if jickgoon_type == "dev" and team.dev >= team.dev_capacity:
+            return Response({"error": "이미 꽉찬 직군입니다."},
+                            status=status.HTTP_400_BAD_REQUEST)
+        elif jickgoon_type == "plan" and team.plan >= team.plan_capacity:
+            return Response({"error": "이미 꽉찬 직군입니다."},
+                            status=status.HTTP_400_BAD_REQUEST)
+        elif jickgoon_type == "design" and team.design >= team.design_capacity:
+            return Response({"error": "이미 꽉찬 직군입니다."},
+                            status=status.HTTP_400_BAD_REQUEST)
+        
+        application = Application.objects.create(team=team, applicant=request.user, jickgoon=jickgoon_type)
 
-        return Response({"message": "You have successfully applied to the team."},
-                    status=status.HTTP_201_CREATED)
-
+        return Response({"message": "팀 지원이 완료되었습니다. 팀장의 승인을 기다려주세요."},status=status.HTTP_201_CREATED)
 
 # 회원가입
 class SignUpAPIView(APIView):
@@ -189,7 +190,6 @@ class SignUpAPIView(APIView):
         user = User.objects.create(username=username, password=make_password(password))
         user.save()
         return Response({'message': '회원가입이 완료되었습니다.'}, status=status.HTTP_201_CREATED)
-
 # 로그인
 class LoginAPIView(APIView):
     def post(self, request):
@@ -206,14 +206,13 @@ class LoginAPIView(APIView):
 
         login(request, user)
         return Response({'message': '로그인이 완료되었습니다.'}, status=status.HTTP_200_OK)
-
 # 로그아웃
 class LogoutAPIView(APIView):
     def post(self, request):
         logout(request)
         return Response({'message': '로그아웃이 완료되었습니다.'}, status=status.HTTP_200_OK)
 
-
+#My팀 보기(지원한 팀, 만든 팀)
 class MyTeamAPIView(APIView):
     def get(self, reqeust, userPk):
         teams_created = Team.objects.filter(created_by=userPk)
@@ -223,132 +222,77 @@ class MyTeamAPIView(APIView):
 
         return Response({"my_teams_created": teams_created_data, "my_teams_joined": teams_joined_data}, status=status.HTTP_200_OK)
 
+#팀장 : 지원자, 팀원 관리
 class TeamManagementAPIView(APIView):
+    # 내 팀에 신청한 사람 가져오기
     def get(self, request, userPk):
-        teams_created = Team.objects.filter(created_by=userPk)
-
-        team_data = []
-        for team in teams_created:
-            dev_members = team.members.filter(jickgoon='dev')
-            plan_members = team.members.filter(jickgoon='plan')
-            design_members = team.members.filter(jickgoon='design')
-
-            dev_member_data = [{'user': member.user.username, 'jickgoon': member.jickgoon} for member in dev_members]
-            plan_member_data = [{'user': member.user.username, 'jickgoon': member.jickgoon} for member in plan_members]
-            design_member_data = [{'user': member.user.username, 'jickgoon': member.jickgoon} for member in design_members]
-
-            team_data.append({
-                'id': team.id,
-                'dev_members': dev_member_data,
-                'plan_members': plan_member_data,
-                'design_members': design_member_data,
-            })
-
-        return Response(team_data, status=status.HTTP_200_OK)
-
-    def post(self, request, userPk):
         user = get_object_or_404(User, pk=userPk)
+        teams_created_by_user = Team.objects.filter(created_by=user)
 
-        # Get the request data
+        # 나의 팀들에 대한 신청 정보 가져오기
+        applications = Application.objects.filter(team__in=teams_created_by_user)
+        application_data = []
+        
+        # 나의 팀들에 대한 멤버 정보 가져오기
+        member_data = []
+
+        for team in teams_created_by_user:
+            members = Member.objects.filter(team=team)
+            for member in members:
+                member_data.append({
+                    "team": team.id,
+                    "user": member.user.id,
+                    "jickgoon": member.jickgoon
+                })
+            
+            applications_for_team = applications.filter(team=team)
+            for application in applications_for_team:
+                application_data.append({
+                    "id": application.id,
+                    "team": application.team.id,
+                    "applicant": application.applicant.id,
+                    "jickgoon": application.jickgoon,
+                    "is_approved": application.is_approved
+                })
+
+        response_data = {
+            "applications": application_data,
+            "members": member_data
+        }
+
+        return Response(response_data, status=status.HTTP_200_OK)
+
+
+    # 내 팀에 신청한 사람의 신청 승인 또는 거절
+    def put(self, request, userPk):
+        user = get_object_or_404(User, pk=userPk)
+        application_id = request.data.get("application_id")
+        is_approved = request.data.get("is_approved")
+
+        application = get_object_or_404(Application, id=application_id, team__created_by=user)
+
+        if is_approved:
+            application.is_approved = True
+            application.save()
+
+            # 신청 승인 시 Member 생성
+            Member.objects.create(team=application.team, user=application.applicant, jickgoon=application.jickgoon)
+        application.delete()
+
+        if is_approved:
+            return Response({"message": "신청이 승인되었습니다."}, status=status.HTTP_200_OK)
+        else:
+            application.delete()
+            return Response({"message": "신청이 거절되었습니다."}, status=status.HTTP_200_OK)
+
+    # 내 팀에 들어와 있는 사람 내보내기
+    def delete(self, request, userPk):
+        user = get_object_or_404(User, pk=userPk)
         team_id = request.data.get("team_id")
-        membername = request.data.get("membername")
-        jickgoon_type = request.data.get("jickgoon_type")
+        member_id = request.data.get("member_id")
 
-        try:
-            # Get the team object
-            team = Team.objects.get(pk=team_id)
+        team = get_object_or_404(Team, id=team_id, created_by=user)
+        member = get_object_or_404(Member, id=member_id, team=team)
 
-            # Check if the user is the creator of the team
-            if team.created_by == user:
-                # Find the member with the given membername and jickgoon_type in the team
-                try:
-                    member = Member.objects.get(team=team, user__username=membername, jickgoon=jickgoon_type)
-                except Member.DoesNotExist:
-                    return Response({"error": "The specified member with the given jickgoon_type was not found in the team."},
-                                    status=status.HTTP_404_NOT_FOUND)
-
-                # Update the team capacity
-                if jickgoon_type == "dev":
-                    team.dev -= 1
-                elif jickgoon_type == "plan":
-                    team.plan -= 1
-                elif jickgoon_type == "design":
-                    team.design -= 1
-
-                # Save the updated team
-                team.save()
-
-                # Remove the member from the team
-                member.delete()
-
-                return Response({"message": "The member has been removed from the team successfully."},
-                                status=status.HTTP_200_OK)
-            else:
-                return Response({"error": "You are not authorized to remove a member from this team."},
-                                status=status.HTTP_401_UNAUTHORIZED)
-        except Team.DoesNotExist:
-            return Response({"error": "The specified team does not exist."},
-                            status=status.HTTP_404_NOT_FOUND)
-
-
-    
-# #마이페이지, 알림, 팀 수락 거절
-# @login_required
-# def mypage(request, user_id):
-#     user = get_object_or_404(User, pk=user_id)
-#     teams = Team.objects.filter(member__user=user)
-#     teamsteams = Team.objects.filter(created_by=user)
-#     notifications = Notification.objects.filter(team__created_by=user)
-#     context = {
-#         'user': user,
-#         'teams':teams,
-#         'teamsteams': teamsteams,
-#         'notifications': notifications,
-#         }
-#     return render(request, 'ddingapp/mypage.html', context)
-
-# #팀원 내보내기
-# @login_required
-# def removeMember(request, teamPk):
-#     team = get_object_or_404(Team, pk=teamPk)
-
-#     if request.method == 'POST':
-#         member_pk = request.POST.get('memberPk')
-#         member = get_object_or_404(Member, pk=member_pk)
-
-#         if request.user == team.created_by and request.user != member.user:
-#             member.delete()
-#             messages.success(request, f"{member.user.username} 님을 팀에서 퇴출시켰습니다.")
-#         else:
-#             messages.error(request, "팀 제작자만 팀원을 퇴출시킬 수 있습니다.")
-
-#     return redirect('teamDetail', contestPk=team.contest.pk, teamPk=teamPk)
-
-# #팀원 수락
-# @login_required
-# def approveJoinRequest(request, notification_pk):
-#     notification = get_object_or_404(Notification, pk=notification_pk)
-
-#     # 팀 제작자인지 확인
-#     if request.user != notification.team.created_by:
-#         return HttpResponseForbidden()
-
-#     # 알림 삭제
-#     notification.delete()
-
-#     # 해당 사용자를 팀에 추가
-#     Member.objects.create(user=notification.user, team=notification.team, jickgoon=notification.jickgoon)
-
-#     messages.success(request, f"{notification.user.username} 님의 팀 참가 신청을 승인하였습니다.")
-#     return redirect('teamDetail', contestPk=notification.team.contest.pk, teamPk=notification.team.pk)
-
-# #팀원 거절
-# def rejectJoinRequest(request, notification_pk):
-#     notification = get_object_or_404(Notification, pk=notification_pk)
-    
-#     if notification.team.created_by == request.user:
-#         notification.delete()
-#     else:
-#         return HttpResponseForbidden()
-    
-#     return redirect(reverse('mypage', args=[request.user.id]))
+        member.delete()
+        return Response({"message": "멤버가 팀에서 내보내졌습니다."}, status=status.HTTP_200_OK)

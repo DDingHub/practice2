@@ -33,16 +33,13 @@ class Team(models.Model):
     design = models.PositiveIntegerField(default=0)
     jickgoon_type = models.CharField(max_length=50, blank=True, choices=[('dev', '개발'), ('plan', '기획'), ('design', '디자인')])
 
-
 class Member(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name = "members")
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     jickgoon = models.CharField(max_length=50, choices=[('dev', '개발'), ('plan', '기획'), ('design', '디자인')])
 
-
-# class Notification(models.Model):
-#     user = models.ForeignKey(User, on_delete=models.CASCADE)
-#     team = models.ForeignKey(Team, on_delete=models.CASCADE)
-#     jickgoon = models.ForeignKey('Jickgoon', on_delete=models.CASCADE,null=True)
-#     created_at = models.DateTimeField(default=timezone.now)
-#     message = models.TextField(null=True) 
+class Application(models.Model):
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    applicant = models.ForeignKey(User, on_delete=models.CASCADE)
+    jickgoon = models.CharField(max_length=50, choices=[('dev', '개발'), ('plan', '기획'), ('design', '디자인')])
+    is_approved = models.BooleanField(default=False)

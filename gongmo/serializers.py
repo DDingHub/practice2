@@ -7,14 +7,15 @@ class ContestSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
 class MemberSerializer(serializers.ModelSerializer):
-    user = serializers.SerializerMethodField()
 
     class Meta:
         model = Member
-        fields = ['user', 'jickgoon']
+        fields = '__all__'
 
-    def get_user(self, member):
-        return member.user.username
+    # user = serializers.SerializerMethodField()
+        # fields = ['user']
+    # def get_user(self, member):
+    #     return member.user.username
 
 class TeamSerializer(serializers.ModelSerializer):
     dev_members = serializers.SerializerMethodField()
