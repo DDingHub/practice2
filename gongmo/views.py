@@ -214,8 +214,21 @@ class LoginAPIView(APIView):
         if not user:
             return Response({'error': '잘못된 사용자 이름 또는 비밀번호입니다.'}, status=status.HTTP_401_UNAUTHORIZED)
 
+
+        
         login(request, user)
-        return Response({'message': '로그인이 완료되었습니다.'}, status=status.HTTP_200_OK)
+
+        user_data = {
+                "id": request.user.id,
+                "username": request.user.username
+            }
+        
+        response_data = {
+                "message": "팀이 생성되었습니다.",
+                "user": user_data
+            }
+        
+        return Response(response_data, status=status.HTTP_201_CREATED)
 # 로그아웃
 class LogoutAPIView(APIView):
     def post(self, request):
