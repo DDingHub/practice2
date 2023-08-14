@@ -121,7 +121,17 @@ class ContestDetailAPIView(APIView):
             team.created_by = request.user
             team.save()
 
-            return Response({'message': '팀이 생성되었습니다.'}, status=status.HTTP_201_CREATED)
+            user_data = {
+                "id": request.user.id,
+                "username": request.user.username
+            }
+
+            response_data = {
+                "message": "팀이 생성되었습니다.",
+                "user": user_data
+            }
+
+            return Response(response_data, status=status.HTTP_201_CREATED)
         else:
             errors = {}
             errors.update(team_form.errors)
