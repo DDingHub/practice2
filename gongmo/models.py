@@ -17,6 +17,19 @@ class Contest(models.Model):
 
     def __str__(self):
         return self.title
+    
+class DDingContest(models.Model):
+    title = models.CharField(max_length=255,null=True)
+    photo = models.TextField(null=True) 
+    field = models.CharField(max_length=255,null=True) 
+    eligibility = models.CharField(max_length=255,null=True)
+    organizer = models.CharField(max_length=255,null=True)
+    sponsorship = models.CharField(max_length=255,null=True)
+    application_period = models.CharField(max_length=255,null=True)
+    prize_total = models.CharField(max_length=255,null=True)
+    prize_first = models.CharField(max_length=255,null=True)
+    website = models.URLField(null=True)
+    details = models.TextField(null=True)
 
 class Team(models.Model):
     name = models.CharField(max_length=50)

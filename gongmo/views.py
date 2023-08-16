@@ -96,10 +96,24 @@ def save_contest_data():
 #공모전 목록 보여주기
 class ContestListAPIView(APIView):
     def get(self, request):
-        save_contest_data()
+        # save_contest_data()
         contests = Contest.objects.all()
         serializer = ContestSerializer(contests, many=True)
         return Response(serializer.data)
+
+#교내 공모전 목록
+class DDingContestListAPIView(APIView):
+    def get(self, request):
+        dding_contests = DDingContest.objects.all()
+        serializer = DDingContestSerializer(dding_contests, many=True)
+        return Response(serializer.data)
+    
+    def post(self,request):
+        dding_contest_form = DDingContestForm(request.data)
+        if dding_contest_form.is_valid():
+            dding_contest_form.save()
+            return Response(dding_contest_form.cleaned_data, status=status.HTTP_201_CREATED)
+        return Response(dding_contest_form.errors, status=status.HTTP_400_BAD_REQUEST)
 
 #공모전 세부페이지
 class ContestDetailAPIView(APIView):

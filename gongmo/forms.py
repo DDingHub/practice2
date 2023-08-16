@@ -15,3 +15,7 @@ class TeamForm(forms.ModelForm):
             "design_capacity" : "디자인"
         }
         
+class DDingContestForm(forms.ModelForm):
+    class Meta:
+        model = DDingContest
+        fields = '__all__'

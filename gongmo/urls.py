@@ -10,9 +10,10 @@ urlpatterns = [
     path("login/", views.LoginAPIView.as_view(), name="login"),
     #로그아웃
     path("logout/", views.LogoutAPIView.as_view(), name="logout"),
-    #공모전 모음
-    path('acontest-list/', views.ContestListAPIView.as_view(), 
-    name='contest_list_api'),
+    #교외 공모전 모음
+    path('acontest-list/', views.ContestListAPIView.as_view(), name='contest_list_api'),
+    #교내 공모전 모음
+    path('dding-contest-list/', views.DDingContestListAPIView.as_view(), name='dding-contest_list_api'),
     #공모전 세부페이지(공모전, 팀 보여줌)
     path("<int:contestPk>/", views.ContestDetailAPIView.as_view(), name="contestDetail"),
     #팀 세부페이지(팀 지원)
