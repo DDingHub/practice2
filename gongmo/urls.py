@@ -21,8 +21,9 @@ urlpatterns = [
     # MY팀(지원한 팀, 먄든 팀)
     path("mypage/<int:userPk>/", views.MyTeamAPIView.as_view(), name="mypage"),
     # 팀관리(내보내기, 수락, 거절)
-    path("teamManagement/<int:userPk>/", views.TeamManagementAPIView.as_view(), name="teamManagement")
-    # path('<int:teamPk>/removeMember/', views.removeMember, name='removeMember'),
-    # path('approveJoinRequest/<int:notification_pk>/', views.approveJoinRequest, name='approveJoinRequest'),
-    # path('rejectJoinRequest/<int:notification_pk>/', views.rejectJoinRequest, name='rejectJoinRequest'),
+    path("teamManagement/<int:userPk>/", views.TeamManagementAPIView.as_view(), name="teamManagement"),
+    # 스크랩하기
+    path("scrap/<int:userPk>", views.ScrapAPIView.as_view(), name="scrap"),
+    # 찜하기
+    path("jjim/<int:userPk>", views.JjimAPIView.as_view(), name="jjim"),
 ]

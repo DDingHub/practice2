@@ -254,7 +254,7 @@ class MyTeamAPIView(APIView):
 
         return Response({"my_teams_created": teams_created_data, "my_teams_joined": teams_joined_data}, status=status.HTTP_200_OK)
 
-#팀장 : 지원자, 팀원 관리
+# 팀장 : 지원자, 팀원 관리
 class TeamManagementAPIView(APIView):
     # 내 팀에 신청한 사람 가져오기
     def get(self, request, userPk):
@@ -328,3 +328,57 @@ class TeamManagementAPIView(APIView):
 
         member.delete()
         return Response({"message": "멤버가 팀에서 내보내졌습니다."}, status=status.HTTP_200_OK)
+
+# 스크랩 하기 (공모전 북마크하기)
+class ScrapAPIView(APIView):
+    def get(self,request, userPk):
+        scraps = Scrap.objects.filter(user=userPk)
+        scrap_data = [
+            {
+                "user": scrap.user.username,
+                "contest_id": scrap.contest.id,
+                "contest_title": scrap.contest.title
+            }
+            for scrap in scraps
+        ]
+        return Response({'message': scrap_data}, status=status.HTTP_200_OK)
+
+
+    def post(self,request, userPk):
+        contest_id = request.data.get("contest")
+        contest = get_object_or_404(Contest, pk=contest_id)
+        user = get_object_or_404(User, pk=userPk)
+        scrap = Scrap.objects.create(contest = contest, user=user)
+
+        scrap_data = {
+            "user": user.username,
+            "contest": contest.title
+        }
+        return Response({'message': scrap_data}, status=status.HTTP_200_OK)
+
+# 찜하기 (팀 찜하기)
+class JjimAPIView(APIView):
+    def get(self,request, userPk):
+        jjims = Jjim.objects.filter(user=userPk)
+        jjim_data = [
+            {
+                "user": jjim.user.username,
+                "jjim_id": jjim.team.id,
+                "jjim_title": jjim.team.teamname
+            }
+            for jjim in jjims
+        ]
+        return Response({'message': jjim_data}, status=status.HTTP_200_OK)
+
+
+    def post(self,request, userPk):
+        team_id = request.data.get("team")
+        team = get_object_or_404(Team, pk=team_id)
+        user = get_object_or_404(User, pk=userPk)
+        jjim = Jjim.objects.create(team = team, user=user)
+
+        jjim_data = {
+            "user": user.username,
+            "team": team.teamname
+        }
+        return Response({'message': jjim_data}, status=status.HTTP_200_OK)
