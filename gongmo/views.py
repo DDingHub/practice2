@@ -136,14 +136,8 @@ class ContestDetailAPIView(APIView):
             team.created_by = request.user
             team.save()
 
-            user_data = {
-                "id": request.user.id,
-                "username": request.user.username
-            }
-
             response_data = {
                 "message": "팀이 생성되었습니다.",
-                "user": user_data
             }
 
             return Response(response_data, status=status.HTTP_201_CREATED)
@@ -239,7 +233,7 @@ class LoginAPIView(APIView):
             }
         
         response_data = {
-                "message": "팀이 생성되었습니다.",
+                "message": "로그인 완료.",
                 "user": user_data
             }
         
