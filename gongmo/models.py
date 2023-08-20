@@ -4,7 +4,7 @@ from django.utils import timezone
 
 class Contest(models.Model):
     title = models.CharField(max_length=255)
-    photo = models.URLField()
+    photo = models.TextField()
     field = models.CharField(max_length=255)
     eligibility = models.CharField(max_length=255)
     organizer = models.CharField(max_length=255)
@@ -14,28 +14,18 @@ class Contest(models.Model):
     prize_first = models.CharField(max_length=255)
     website = models.URLField()
     details = models.TextField()
+    isSchool = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title
-    
-class DDingContest(models.Model):
-    title = models.CharField(max_length=255,null=True)
-    photo = models.TextField(null=True) 
-    field = models.CharField(max_length=255,null=True) 
-    eligibility = models.CharField(max_length=255,null=True)
-    organizer = models.CharField(max_length=255,null=True)
-    sponsorship = models.CharField(max_length=255,null=True)
-    application_period = models.CharField(max_length=255,null=True)
-    prize_total = models.CharField(max_length=255,null=True)
-    prize_first = models.CharField(max_length=255,null=True)
-    website = models.URLField(null=True)
-    details = models.TextField(null=True)
+
 
 class Team(models.Model):
     name = models.CharField(max_length=50)
     teamname = models.CharField(max_length=100,null=True)
     call = models.CharField(max_length=100,null=True)
     detail = models.TextField(null=True)
+    tendency = models.JSONField(default = list)
     contest = models.ForeignKey(Contest, on_delete=models.CASCADE)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     dev_capacity = models.PositiveIntegerField(default=0)
@@ -45,6 +35,7 @@ class Team(models.Model):
     plan = models.PositiveIntegerField(default=0)
     design = models.PositiveIntegerField(default=0)
     jickgoon_type = models.CharField(max_length=50, blank=True, choices=[('dev', '개발'), ('plan', '기획'), ('design', '디자인')])
+
 
 class Member(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name = "members")

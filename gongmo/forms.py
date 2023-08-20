@@ -17,5 +17,5 @@ class TeamForm(forms.ModelForm):
         
 class DDingContestForm(forms.ModelForm):
     class Meta:
-        model = DDingContest
+        model =Contest
         fields = '__all__'

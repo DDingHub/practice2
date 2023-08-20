@@ -5,11 +5,7 @@ class ContestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contest
         fields = '__all__'
-        
-class DDingContestSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = DDingContest
-        fields = '__all__'
+
         
 class MemberSerializer(serializers.ModelSerializer):
 
