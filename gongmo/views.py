@@ -20,6 +20,7 @@ from rest_framework import status
 from rest_framework.parsers import JSONParser
 from django.core.exceptions import ObjectDoesNotExist
 from mypage.models import UserProfile
+from .serializers import SignupSerializer
 
 url = "https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gp="
 
@@ -203,23 +204,13 @@ class TeamDetailAPIView(APIView):
 # 회원가입
 class SignUpAPIView(APIView):
     def post(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
-        name = request.data.get('name')
+        serializer = SignupSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            return Response({'message': '회원가입이 완료되었습니다.'}, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)# 로그인
 
-        if not username or not password or not name:
-            return Response({'error': '사용자 이름, 비밀번호, 이름을 입력해주세요.'}, status=status.HTTP_400_BAD_REQUEST)
-        if User.objects.filter(username=username).exists():
-            return Response({'error': '이미 존재하는 사용자 이름입니다.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        user = User.objects.create(username=username, password=make_password(password))
-        user.save()
-        
-        user_profile = UserProfile.objects.create(user=user, name=name)
-        user_profile.save()
-        
-        return Response({'message': '회원가입이 완료되었습니다.'}, status=status.HTTP_201_CREATED)
-# 로그인
 class LoginAPIView(APIView):
     def post(self, request):
         username = request.data.get('username')
