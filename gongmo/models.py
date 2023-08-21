@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+import json
 
 class Contest(models.Model):
     title = models.CharField(max_length=255)
@@ -25,7 +26,7 @@ class Team(models.Model):
     teamname = models.CharField(max_length=100,null=True)
     call = models.CharField(max_length=100,null=True)
     detail = models.TextField(null=True)
-    tendency = models.JSONField(default = list)
+    tendency = models.TextField(default="[]")
     contest = models.ForeignKey(Contest, on_delete=models.CASCADE)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     dev_capacity = models.PositiveIntegerField(default=0)
@@ -35,7 +36,9 @@ class Team(models.Model):
     plan = models.PositiveIntegerField(default=0)
     design = models.PositiveIntegerField(default=0)
     jickgoon_type = models.CharField(max_length=50, blank=True, choices=[('dev', '개발'), ('plan', '기획'), ('design', '디자인')])
-
+    
+    def get_tendency_as_list(self):
+        return json.loads(self.tendency)
 
 class Member(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name = "members")

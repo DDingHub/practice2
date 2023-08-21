@@ -135,6 +135,7 @@ class ContestDetailAPIView(APIView):
             team = team_form.save(commit=False)
             team.contest = contest
             team.created_by = request.user
+            team.tendency = json.dumps(request.data.get('tendency'))
             team.save()
 
             response_data = {

@@ -1,6 +1,7 @@
 from django import forms
 from .models import *
 from django.forms import formset_factory
+import json
 
 class TendencyForm(forms.Form):
     tendency = forms.CharField()
@@ -9,6 +10,8 @@ TendencyFormSet = formset_factory(TendencyForm, extra=1)
 
 
 class TeamForm(forms.ModelForm):
+    tendency = forms.JSONField(label="팀 성향", required=False)
+
     class Meta:
         model = Team
         fields = ["name","teamname","call","detail", "dev_capacity", "plan_capacity", "design_capacity"]
@@ -33,11 +36,7 @@ class TeamForm(forms.ModelForm):
         def save(self, commit=True):
             instance = super().save(commit=commit)
             if commit:
-                instance.tendency = []
-                for form in self.tendency_formset:
-                    tendency_value = form.cleaned_data.get("tendency")
-                    if tendency_value:
-                        instance.tendency.append(tendency_value)
+                instance.tendency = self.cleaned_data.get("tendency")
                 instance.save()
             return instance
         
