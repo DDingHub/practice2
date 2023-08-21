@@ -38,5 +38,8 @@ urlpatterns = [
     path("jjim/<int:userPk>/", views.JjimListAPIView.as_view(), name="jjimList"),
 
     #알림보기
-    path("notification/<int:userPk>/", views.NotificationListAPIView.as_view(), name="notification")
+    path("notification/<int:userPk>/", views.NotificationListAPIView.as_view(), name="notification"),
+
+    #유저정보넣기
+    path('userInfo/',views.UserInfoAPIView.as_view(), name='userInfo'),
 ]
