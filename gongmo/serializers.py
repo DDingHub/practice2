@@ -13,7 +13,6 @@ class MemberSerializer(serializers.ModelSerializer):
         model = Member
         fields = '__all__'
 
-
 class TeamSerializer(serializers.ModelSerializer):
     dev_members = serializers.SerializerMethodField()
     plan_members = serializers.SerializerMethodField()
@@ -51,4 +50,9 @@ class NotificationSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Notification
+        fields = '__all__'
+
+class UserInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserInfo
         fields = '__all__'

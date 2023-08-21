@@ -420,4 +420,15 @@ class JjimListAPIView(ListAPIView):
     def get_queryset(self):
         user_pk = self.kwargs["userPk"]
         return Jjim.objects.filter(user__pk=user_pk)
-    
+
+#유저 정보받기
+class UserInfoAPIView(APIView):
+    def post(self, request):
+        data = request.data.copy()
+        data['user'] = request.user.id
+
+        serializer = UserInfoSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
