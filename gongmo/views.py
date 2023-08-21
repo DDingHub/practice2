@@ -14,6 +14,7 @@ from django.utils.html import escape
 from django.utils import timezone
 from django.http import HttpResponseForbidden
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.parsers import JSONParser
@@ -96,7 +97,7 @@ def save_contest_data():
 #공모전 목록 보여주기
 class ContestListAPIView(APIView):
     def get(self, request):
-        # save_contest_data()
+        save_contest_data()
         contests = Contest.objects.filter(isSchool=False)
         serializer = ContestSerializer(contests, many=True)
         return Response(serializer.data)
@@ -330,55 +331,56 @@ class TeamManagementAPIView(APIView):
         return Response({"message": "멤버가 팀에서 내보내졌습니다."}, status=status.HTTP_200_OK)
 
 # 스크랩 하기 (공모전 북마크하기)
-class ScrapAPIView(APIView):
-    def get(self,request, userPk):
-        scraps = Scrap.objects.filter(user=userPk)
-        scrap_data = [
-            {
-                "user": scrap.user.username,
-                "contest_id": scrap.contest.id,
-                "contest_title": scrap.contest.title
-            }
-            for scrap in scraps
-        ]
-        return Response({'message': scrap_data}, status=status.HTTP_200_OK)
-
-
-    def post(self,request, userPk):
+class ScrapCreateAPIView(APIView):
+    def post(self,request):
         contest_id = request.data.get("contest")
-        contest = get_object_or_404(Contest, pk=contest_id)
-        user = get_object_or_404(User, pk=userPk)
-        scrap = Scrap.objects.create(contest = contest, user=user)
+        user =request.user
 
-        scrap_data = {
+        try:
+            scrap = Scrap.objects.get(user=user, contest_id=contest_id)
+            scrap.delete() 
+            return Response({'message': '스크랩 취소'}, status=status.HTTP_200_OK)
+        except Scrap.DoesNotExist:
+            contest = get_object_or_404(Contest, pk=contest_id)
+            scrap = Scrap.objects.create(user=user, contest=contest)
+
+            scrap_data = {
             "user": user.username,
             "contest": contest.title
-        }
-        return Response({'message': scrap_data}, status=status.HTTP_200_OK)
+            }
+            return Response({'message': scrap_data}, status=status.HTTP_201_CREATED)
+#스크랩목록보기
+class ScrapListAPIView(ListAPIView):
+    serializer_class = ScrapSerializer
+
+    def get_queryset(self):
+        user_pk = self.kwargs["userPk"]
+        return Scrap.objects.filter(user__pk=user_pk)
+
 
 # 찜하기 (팀 찜하기)
-class JjimAPIView(APIView):
-    def get(self,request, userPk):
-        jjims = Jjim.objects.filter(user=userPk)
-        jjim_data = [
-            {
-                "user": jjim.user.username,
-                "jjim_id": jjim.team.id,
-                "jjim_title": jjim.team.teamname
-            }
-            for jjim in jjims
-        ]
-        return Response({'message': jjim_data}, status=status.HTTP_200_OK)
-
-
-    def post(self,request, userPk):
+class JjimCreateAPIView(APIView):
+    def post(self,request):
         team_id = request.data.get("team")
-        team = get_object_or_404(Team, pk=team_id)
-        user = get_object_or_404(User, pk=userPk)
-        jjim = Jjim.objects.create(team = team, user=user)
+        user =request.user
 
-        jjim_data = {
+        try:
+            jjim = Jjim.objects.get(user=user, team_id=team_id)
+            jjim.delete() 
+            return Response({'message': '찜 취소'}, status=status.HTTP_200_OK)
+        except Jjim.DoesNotExist:
+            team = get_object_or_404(Team, pk=team_id)
+            jjim = Jjim.objects.create(user=user, team=team)
+
+            jjim_data = {
             "user": user.username,
             "team": team.teamname
-        }
-        return Response({'message': jjim_data}, status=status.HTTP_200_OK)
+            }
+            return Response({'message': jjim_data}, status=status.HTTP_201_CREATED)
+#찜 목록보기
+class JjimListAPIView(ListAPIView):
+    serializer_class = JjimSerializer
+
+    def get_queryset(self):
+        user_pk = self.kwargs["userPk"]
+        return Jjim.objects.filter(user__pk=user_pk)

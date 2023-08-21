@@ -34,3 +34,15 @@ class TeamSerializer(serializers.ModelSerializer):
     def get_design_members(self, team):
         design_members = team.members.filter(jickgoon='design')
         return MemberSerializer(design_members, many=True).data
+
+class ScrapSerializer(serializers.ModelSerializer):
+  
+    class Meta:
+        model = Scrap
+        fields = '__all__'
+
+class JjimSerializer(serializers.ModelSerializer):
+  
+    class Meta:
+        model = Jjim
+        fields = '__all__'

@@ -51,7 +51,13 @@ class Application(models.Model):
 class Scrap(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     contest = models.ForeignKey(Contest, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+
+    class Meta: unique_together = ['user','contest']
 
 class Jjim(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+
+    class Meta: unique_together = ['user','team']
