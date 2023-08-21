@@ -1,38 +1,43 @@
 pip install requests
 
-# 로그인
+# 로그인, 회원가입 /login /signup
 
-{"username":"a","password":"a"}
-(a~p)중 아무거나 가능
+{"username":"","password":""}
 
-# 팀생성
+# 로그아웃 /logout
 
-{"name":"a팀","teamname":"하이","call":"010","detail":"웰컴",
-"dev_capacity":2,"plan_capacity":2,"design_capacity":2}
+그냥 post하기
 
-# 팀 가입
+# 팀생성 /contest_id
 
-{"jickgoon_type" : "dev"}
+{"name":"팀","teamname":"1","call":"1","detail":"1",
+"dev_capacity": 1,"plan_capacity": 1,"design_capacity": 1}
 
-<!-- {"jickgoon_type" : "plan"} {"jickgoon_type" : "design"} -->
+# 팀 가입 /contest_id/team_id
 
-# 멤버 내보내기
+{"jickgoon_type" : "dev"} #dev외에 plan 또는 design도 가능
 
-{"team_id": 35,"membername": "p","jickgoon_type": "dev"}
+# 팀원 수락또는 거절하기 /teamManagement/팀장user_id
+
+{"application_id":1,"is_approved":"true"} #지원번호id, true or false
+
+# 멤버 내보내기 /teamManagement/팀장user_id
+
+{"team_id":1,"user_id":2}
 
 # 교내 공모전 생성
 
 {
-"title": "제9회 명지C.C 창의·융합 아이디어 공모전",
-"photo": "img/교내5.png",
-"field": "아이디어",
-"eligibility": "재학생",
-"organizer": "대학교육혁신원 교육개발센터",
-"sponsorship": "대학혁신지원사업",
-"application_period": "2023-04-27 ~ 2023-05-07D+101",
-"prize_total": "300만원",
-"prize_first": "100만원",
-"website": "https://www.mju.ac.kr/bbs/mjukr/141/198631/artclView.do",
-"details": ".",
-"isSchool":"true"
+"title": "",
+"photo": "",
+"field": "",
+"eligibility": "",
+"organizer": "",
+"sponsorship": "",
+"application_period": "",
+"prize_total": "3",
+"prize_first": "",
+"website": "",
+"details": "",
+"isSchool":"true" #false로 할 시 교외 공모전으로 생성 됨
 }

@@ -36,4 +36,7 @@ urlpatterns = [
     path("jjim/", views.JjimCreateAPIView.as_view(), name="jjimCreate"),
     # 찜페이지
     path("jjim/<int:userPk>/", views.JjimListAPIView.as_view(), name="jjimList"),
+
+    #알림보기
+    path("notification/<int:userPk>/", views.NotificationListAPIView.as_view(), name="notification")
 ]

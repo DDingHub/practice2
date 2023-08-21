@@ -193,6 +193,10 @@ class TeamDetailAPIView(APIView):
         
         application = Application.objects.create(team=team, applicant=request.user, jickgoon=jickgoon_type)
 
+        if team.created_by != request.user:
+            notification_message = f"{request.user.username}님 {team.name}의 팀원이 되고 싶어해요!"
+            Notification.objects.create(user=team.created_by, message=notification_message)
+
         return Response({"message": "팀 지원이 완료되었습니다. 팀장의 승인을 기다려주세요."},status=status.HTTP_201_CREATED)
 
 # 회원가입
@@ -273,9 +277,9 @@ class TeamManagementAPIView(APIView):
             members = Member.objects.filter(team=team)
             for member in members:
                 member_data.append({
-                    "team": team.id,
-                    "user": member.user.id,
-                    "jickgoon": member.jickgoon
+                    "team_id": team.id,
+                    "user_id": member.user.id,
+                    "jickgoon_type": member.jickgoon
                 })
             
             applications_for_team = applications.filter(team=team)
@@ -295,7 +299,6 @@ class TeamManagementAPIView(APIView):
 
         return Response(response_data, status=status.HTTP_200_OK)
 
-
     # 내 팀에 신청한 사람의 신청 승인 또는 거절
     def put(self, request, userPk):
         user = get_object_or_404(User, pk=userPk)
@@ -307,28 +310,59 @@ class TeamManagementAPIView(APIView):
         if is_approved:
             application.is_approved = True
             application.save()
+            applicant = application.applicant
+            team = application.team
+            notification_message = f"{team.name} 팀에서 팀 요청을 수락했어요!"
+            Notification.objects.create(user=applicant, message=notification_message)
 
-            # 신청 승인 시 Member 생성
+            if application.jickgoon == 'dev':
+              team.dev += 1
+            elif application.jickgoon == 'plan':
+                team.plan += 1
+            elif application.jickgoon == 'design':
+                team.design += 1
+            
+            team.save()
+
             Member.objects.create(team=application.team, user=application.applicant, jickgoon=application.jickgoon)
-        application.delete()
-
-        if is_approved:
+            application.delete()
             return Response({"message": "신청이 승인되었습니다."}, status=status.HTTP_200_OK)
         else:
+            applicant = application.applicant
+            team = application.team
+            notification_message = f"{team.name} 팀에서 팀 요청을 거절했어요"
+            Notification.objects.create(user=applicant, message=notification_message)
             application.delete()
             return Response({"message": "신청이 거절되었습니다."}, status=status.HTTP_200_OK)
 
     # 내 팀에 들어와 있는 사람 내보내기
-    def delete(self, request, userPk):
+    def post(self, request, userPk):
         user = get_object_or_404(User, pk=userPk)
         team_id = request.data.get("team_id")
-        member_id = request.data.get("member_id")
+        user_id = request.data.get("user_id")
 
-        team = get_object_or_404(Team, id=team_id, created_by=user)
-        member = get_object_or_404(Member, id=member_id, team=team)
 
-        member.delete()
-        return Response({"message": "멤버가 팀에서 내보내졌습니다."}, status=status.HTTP_200_OK)
+        try:
+            team = get_object_or_404(Team, id=team_id, created_by=user)
+            member = get_object_or_404(Member, id=user_id, team=team)
+            member.delete()
+            return Response({"message": "멤버가 팀에서 내보내졌습니다."}, status=status.HTTP_200_OK)
+        except Team.DoesNotExist:
+            return Response({"error": "해당 팀을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+        except Member.DoesNotExist:
+            return Response({"error": "해당 멤버를 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            print(team_id)
+            request.data.get("user_id")
+            return Response({"errorasdfaesf": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class NotificationListAPIView(APIView):
+    def get(self, request, userPk):
+        user = get_object_or_404(User, pk=userPk)
+        notifications = Notification.objects.filter(user=user).order_by('-created_at')
+        serializer = NotificationSerializer(notifications, many=True)
+        return Response(serializer.data)
 
 # 스크랩 하기 (공모전 북마크하기)
 class ScrapCreateAPIView(APIView):
@@ -349,6 +383,7 @@ class ScrapCreateAPIView(APIView):
             "contest": contest.title
             }
             return Response({'message': scrap_data}, status=status.HTTP_201_CREATED)
+        
 #스크랩목록보기
 class ScrapListAPIView(ListAPIView):
     serializer_class = ScrapSerializer
@@ -377,6 +412,7 @@ class JjimCreateAPIView(APIView):
             "team": team.teamname
             }
             return Response({'message': jjim_data}, status=status.HTTP_201_CREATED)
+
 #찜 목록보기
 class JjimListAPIView(ListAPIView):
     serializer_class = JjimSerializer
@@ -384,3 +420,4 @@ class JjimListAPIView(ListAPIView):
     def get_queryset(self):
         user_pk = self.kwargs["userPk"]
         return Jjim.objects.filter(user__pk=user_pk)
+    

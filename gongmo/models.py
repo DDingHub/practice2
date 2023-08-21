@@ -61,3 +61,9 @@ class Jjim(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, null=True)
 
     class Meta: unique_together = ['user','team']
+
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(default=timezone.now)
+    message = models.TextField(null=True)
+    is_read = models.BooleanField(default=False)
