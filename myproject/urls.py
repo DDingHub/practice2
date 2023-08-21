@@ -5,4 +5,5 @@ from gongmo import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('gongmo.urls')),
+    path('', include('mypage.urls')),
 ]

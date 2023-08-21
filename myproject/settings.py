@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'gongmo',
     'rest_framework',
     'corsheaders',
+    'mypage',
 ]
 
 MIDDLEWARE = [

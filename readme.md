@@ -41,3 +41,7 @@ pip install requests
 "details": "",
 "isSchool":"true" #false로 할 시 교외 공모전으로 생성 됨
 }
+
+# userInfo/ -> 회원가입때 정보 받기 위한 곳
+
+# mypage/ -> 팀 만들었을 때!
