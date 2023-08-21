@@ -97,7 +97,7 @@ def save_contest_data():
 #공모전 목록 보여주기
 class ContestListAPIView(APIView):
     def get(self, request):
-        save_contest_data()
+        # save_contest_data()
         contests = Contest.objects.filter(isSchool=False)
         serializer = ContestSerializer(contests, many=True)
         return Response(serializer.data)
@@ -307,7 +307,7 @@ class TeamManagementAPIView(APIView):
 
         application = get_object_or_404(Application, id=application_id, team__created_by=user)
 
-        if is_approved:
+        if is_approved == "true":
             application.is_approved = True
             application.save()
             applicant = application.applicant
@@ -356,7 +356,7 @@ class TeamManagementAPIView(APIView):
             request.data.get("user_id")
             return Response({"errorasdfaesf": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
+# 알림 확인, 삭제
 class NotificationListAPIView(APIView):
     def get(self, request, userPk):
         user = get_object_or_404(User, pk=userPk)
@@ -364,6 +364,19 @@ class NotificationListAPIView(APIView):
         serializer = NotificationSerializer(notifications, many=True)
         return Response(serializer.data)
 
+    def post(self, request, userPk):
+        user = get_object_or_404(User, pk=userPk)
+        notification_id = request.data.get("notification_id")
+        is_read = request.data.get("is_read")
+
+        notification = get_object_or_404(Notification, id=notification_id, user=user)
+        if is_read == "true":
+            notification.is_read = True
+            notification.delete()
+            return Response({"message": "알림이 삭제되었습니다."}, status=status.HTTP_200_OK)
+        else:
+            return Response({"error": "잘못된 요청입니다."}, status=status.HTTP_400_BAD_REQUEST)
+        
 # 스크랩 하기 (공모전 북마크하기)
 class ScrapCreateAPIView(APIView):
     def post(self,request):

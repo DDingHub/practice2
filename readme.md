@@ -41,3 +41,15 @@ pip install requests
 "details": "",
 "isSchool":"true" #false로 할 시 교외 공모전으로 생성 됨
 }
+
+# 스크랩 하기
+
+{"contest" : 10}
+
+# 찜 하기
+
+{"team" : 1}
+
+# 알림 삭제 하기
+
+{"notification_id":5,"is_read":"true"}

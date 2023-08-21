@@ -10,6 +10,8 @@ urlpatterns = [
     path("login/", views.LoginAPIView.as_view(), name="login"),
     #로그아웃
     path("logout/", views.LogoutAPIView.as_view(), name="logout"),
+    #유저정보넣기
+    path('userInfo/',views.UserInfoAPIView.as_view(), name='userInfo'),
 
     #교외 공모전 모음
     path('acontest-list/', views.ContestListAPIView.as_view(), name='contest_list_api'),
@@ -40,6 +42,4 @@ urlpatterns = [
     #알림보기
     path("notification/<int:userPk>/", views.NotificationListAPIView.as_view(), name="notification"),
 
-    #유저정보넣기
-    path('userInfo/',views.UserInfoAPIView.as_view(), name='userInfo'),
 ]
