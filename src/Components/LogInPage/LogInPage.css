@@ -1,0 +1,194 @@
+.dis-col-cen {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.LP-background {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+
+  justify-content: center;
+  align-items: center;
+  background: #f7f7f7;
+  box-sizing: border-box;
+}
+
+.LP-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 371px;
+  height: fit-content;
+  padding: 20px 0px 20px 0px;
+  border-radius: 5px;
+  border: 1px solid #e1e2e3;
+  background: #fff;
+}
+.LP-container-logo {
+  font-size: 24px;
+  font-weight: 700;
+
+  text-decoration: none;
+  color: #002e66;
+  font-family: "PyeongChangPeace";
+}
+.LP-container-text-bold {
+  width: 165px;
+  height: 48px;
+  font-size: 20px;
+  font-weight: 700;
+  margin-top: 25px;
+  text-align: center;
+  color: #002274;
+}
+.LP-container-text-thin1 {
+  width: 255px;
+  height: 34px;
+  color: #888;
+  font-size: 14px;
+  font-weight: 500;
+  margin-top: 27px;
+  display: flex;
+  flex-direction: row;
+  align-items: end;
+  justify-content: center;
+}
+.LP-container-text-thin2 {
+  width: 275px;
+  height: 34px;
+  color: #888;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+}
+.LP-container-form {
+  margin-top: 45.5px;
+}
+.LP-container-form-input-text1 {
+  color: #888;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.LP-container-form-inputID {
+  width: 330px;
+  height: 46px;
+  border-radius: 5px;
+  border: 1px solid #e1e2e3;
+  background: #fff;
+  margin-top: 6px;
+  caret-color: transparent;
+}
+.LP-container-form-inputID::placeholder {
+  color: #d3d6d6;
+  font-size: 14px;
+  font-weight: 600;
+}
+/* .LP-container-form-inputID:hover {
+  background-color: #e8f0fe;
+} */
+.LP-container-form-inputID:focus {
+  outline: none;
+  background-color: #e8f0fe;
+}
+.LP-container-form-input-text2 {
+  color: #888;
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 15px;
+}
+
+.LP-container-form-inputPW {
+  width: 330px;
+  height: 46px;
+  border-radius: 5px;
+  border: 1px solid #e1e2e3;
+  background: #fff;
+  margin-top: 6px;
+  caret-color: transparent;
+}
+.LP-container-form-inputPW:focus {
+  outline: none;
+  background-color: #e8f0fe;
+}
+.LP-container-form-inputPW::placeholder {
+  color: #d3d6d6;
+  font-size: 14px;
+  font-weight: 600;
+}
+.LP-container-form-error {
+  width: 335px;
+  height: 50px;
+  margin-top: 8px;
+  white-space: pre-wrap;
+}
+.LP-container-form-error-unact {
+  color: transparent;
+}
+.LP-container-form-error-act {
+  color: #ff4646;
+  font-family: Inter;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+}
+/* .LP-container-form-inputPW:hover {
+  background-color: #e8f0fe;
+} */
+.LP-container-form-logInButton {
+  width: 330px;
+  height: 49px;
+  border-radius: 90px;
+
+  margin-top: 5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  text-decoration: none;
+  border: none;
+}
+.LP-container-form-logInButton-active {
+  background: #36f;
+}
+.LP-container-form-logInButton-unActive {
+  background: #f2f4f7;
+}
+.LP-container-form-logInButton-text {
+  font-size: 16px;
+  font-weight: 700;
+}
+.LP-container-form-logInButton-text-active {
+  color: #fff;
+}
+.LP-container-form-logInButton-text-unActive {
+  color: #ccc;
+}
+.LP-container-footer {
+  width: 330px;
+  height: auto;
+  margin-top: 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.LP-container-footer-text1 {
+  color: #ccc;
+  font-size: 11px;
+  font-weight: 700;
+}
+.LP-container-footer-text2 {
+  color: #ccc;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 10px;
+  text-decoration: none;
+}

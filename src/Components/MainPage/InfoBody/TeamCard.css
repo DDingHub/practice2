@@ -1,0 +1,67 @@
+.TeamCard {
+  width: 1059px;
+  height: 305px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  border: 1px solid #eaeaea;
+  margin: 33px 55px 33px 55px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-left: 57px;
+  padding-right: 57px;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+.TeamCard-text {
+  color: #000;
+  font-size: 20px;
+  font-weight: 700;
+}
+.TeamCard-text-bold {
+  color: #000;
+  font-size: 20px;
+  font-weight: 700;
+}
+.TeamCard-text-thin {
+  color: #9c9c9c;
+  font-size: 14px;
+  font-weight: 700;
+  margin-top: 5px;
+}
+.TeamCard-jobArea {
+  margin-top: 15px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.TeamCard-jobArea-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.TeamCard-jobArea-container-name {
+  color: #000;
+  font-size: 20px;
+  font-weight: 700;
+
+  text-align: center;
+}
+.TeamCard-jobArea-container-member {
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+  align-items: center;
+  width: 293px;
+  height: 127px;
+  border-radius: 10px;
+  background: #f2f4f7;
+  margin-top: 15px;
+}
+.TeamCard-jobArea-container-member-icons {
+  margin-left: 22px;
+}
+.TeamCard-jobArea-container-member-icons img {
+  margin-left: 18px;
+}

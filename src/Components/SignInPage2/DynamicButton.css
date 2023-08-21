@@ -1,0 +1,67 @@
+.DB-small {
+  width: 51px;
+  height: 33px;
+  border-radius: 16.5px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  cursor: pointer;
+}
+.DB-small-text {
+  color: #333;
+  font-size: 13px;
+  font-weight: 500;
+}
+.DB-middle {
+  width: 103px;
+  height: 46px;
+  border-radius: 90px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  cursor: pointer;
+}
+.DB-middle-text {
+  font-weight: 500;
+  font-size: 14px;
+}
+.DB-big {
+  width: 330px;
+  height: 49px;
+  border-radius: 90px;
+  margin-top: 35px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+.DB-big-text {
+  font-size: 16px;
+  font-weight: 700;
+}
+.default-gray {
+  background: #f2f4f7;
+  border: 1px solid transparent;
+  color: #ccc;
+}
+.default-blue {
+  border: 1px solid #36f;
+  background-color: #fff;
+  color: #36f;
+}
+.big-gray {
+  background: #f2f4f7;
+  border: 1px solid transparent;
+  color: #ccc;
+}
+.big-blue {
+  background: #36f;
+  color: #fff;
+}

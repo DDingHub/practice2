@@ -1,0 +1,32 @@
+.CarouselContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+  align-items: start;
+}
+.Carousel {
+  width: 100vw;
+  height: 300px;
+  margin-top: 40px;
+  margin-bottom: 61px;
+  background-color: #eaeaea;
+}
+.inner {
+  width: 1060px;
+  height: 300px;
+  outline: none;
+}
+
+.img {
+  width: 1060px;
+  min-width: 100%;
+  max-height: 300px;
+  cursor: pointer;
+  min-height: 300px;
+}
+.img:focus {
+  outline: none;
+}
+
+@media (max-width: 1100px) {
+}

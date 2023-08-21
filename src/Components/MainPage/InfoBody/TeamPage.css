@@ -1,0 +1,58 @@
+.tP-container-bar-edit {
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  top: 10px;
+  right: -572px;
+  cursor: pointer;
+}
+.tP-container-name {
+  color: #000;
+  font-family: Pretendard;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+  margin-top: 30px;
+}
+.tP-container-teamname {
+  color: #9c9c9c;
+  font-family: Pretendard;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+  margin-top: 6px;
+}
+.tP-container-detail {
+  margin-top: 22px;
+}
+.tP-container-title {
+  color: #000;
+  font-family: Pretendard;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+  margin-top: 30px;
+  margin-bottom: 15px;
+}
+.tP-jobArea-container-name {
+  color: #000;
+  font-size: 16px;
+  font-weight: 700;
+
+  text-align: center;
+}
+.tP-jobArea-container-member {
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+  align-items: center;
+  width: 241px;
+  height: 104px;
+  border-radius: 10px;
+  background: #f2f4f7;
+  margin-top: 15px;
+  margin-bottom: 30px;
+}

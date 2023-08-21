@@ -1,0 +1,11 @@
+.logo {
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+}
+.ddingHub {
+  font-size: 20px;
+  color: #002e66;
+  font-weight: 700;
+  font-family: "PyeongChangPeace";
+}

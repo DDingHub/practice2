@@ -1,0 +1,116 @@
+.p2-background {
+  display: flex;
+  width: 1920px;
+  height: 902px;
+
+  justify-content: start;
+  align-items: center;
+  background: #f7f7f7;
+  flex-direction: column;
+}
+.p2-container-logo {
+  display: flex;
+  flex-direction: row;
+  width: 300px;
+  height: 32px;
+
+  justify-content: center;
+  align-items: center;
+  margin-top: 239px;
+  margin-bottom: 34px;
+}
+.p2-container-logo img {
+  margin-right: 5px;
+}
+.p2-container {
+  width: 371px;
+  height: 362px;
+  flex-shrink: 0;
+  border-radius: 5px;
+  border: 1px solid #e1e2e3;
+  background: #fff;
+}
+.p2-container-head {
+  width: 371px;
+  height: 60px;
+  border-bottom: 1px solid #36f;
+  position: relative;
+}
+.p2-container-head-num {
+  width: 23px;
+  height: 23px;
+  border-radius: 100%;
+  background-color: #36f;
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+  margin-left: 24px;
+  margin-right: 7px;
+}
+.p2-container-head-num-check {
+  width: 23px;
+  height: 23px;
+  margin-left: 24px;
+  margin-right: 7px;
+}
+.p2-container-head-num-text {
+  color: #f8f8f8;
+  font-size: 14px;
+  font-weight: 600;
+}
+.p2-container-head-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+.p2-container-head-nextNum {
+  width: 23px;
+  height: 23px;
+  border-radius: 100%;
+  background-color: #f2f4f7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  left: 324px;
+  top: 18.7px;
+}
+.p2-container-head-nextNum-text {
+  color: #ccc;
+  font-size: 14px;
+  font-weight: 600;
+}
+.p2-container-body {
+  width: 371px;
+  height: 302px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.p2-container-body-que {
+  width: 151px;
+  height: 17px;
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 50px;
+  align-self: flex-start;
+  margin-left: 24px;
+}
+.p2-container-body-que-title {
+  width: 25px;
+  height: 17px;
+  color: #888;
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 48px;
+  align-self: flex-start;
+  margin-left: 21px;
+}
+.p2-container-body-ButtonContainer {
+  width: 330px;
+  height: 46px;
+  margin-top: 6px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}

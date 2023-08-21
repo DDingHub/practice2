@@ -1,0 +1,46 @@
+.JobCard {
+  margin-top: 11px;
+  display: flex;
+  flex-direction: row;
+  width: auto;
+  height: 40px;
+  background-color: #fff;
+  align-items: center;
+  margin-right: 15px;
+}
+
+.JobCard-container {
+  width: 143px;
+  height: 39px;
+  margin-left: 8px;
+  border-radius: 90px;
+  background: #f2f4f7;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+.JobCard-container-job {
+  color: #000;
+  font-size: 15px;
+  font-weight: 500;
+
+  padding-right: 8px;
+}
+.JobCard-container-input {
+  width: 55px;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  padding-left: 0px;
+  text-align: right;
+  padding-right: 5px;
+  color: #828282;
+  font-size: 15px;
+  font-weight: 500;
+}
+.JobCard-container-text {
+  color: #828282;
+  font-size: 15px;
+  font-weight: 500;
+}

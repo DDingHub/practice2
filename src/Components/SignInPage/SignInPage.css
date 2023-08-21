@@ -1,0 +1,144 @@
+.dis-col-cen {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.background {
+  display: flex;
+  width: 1920px;
+  height: 902px;
+  padding: 61px 0px;
+  justify-content: center;
+  align-items: start;
+  background: #f7f7f7;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 371px;
+  height: 780px;
+
+  border-radius: 5px;
+  border: 1px solid #e1e2e3;
+  background: #fff;
+}
+.container-head {
+  margin-top: 25px;
+  display: flex;
+  flex-direction: row;
+  position: relative;
+  align-items: center;
+}
+.container-head-cancel {
+  text-decoration: none;
+  position: absolute;
+  display: flex;
+  top: 5px;
+  left: -120px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #000;
+}
+.container-head-text {
+  font-size: 24px;
+  font-weight: 800;
+}
+.container-form {
+  margin-top: 34px;
+}
+.container-form-input-text1 {
+  color: #888;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.container-form-inputID {
+  width: 330px;
+  height: 46px;
+  border-radius: 5px;
+  border: 1px solid #e1e2e3;
+  background: #fff;
+  margin-top: 6px;
+  padding: 0px 0px 0px 0px;
+}
+.container-form-inputID::placeholder {
+  color: #d3d6d6;
+  font-size: 14px;
+  font-weight: 600;
+}
+.selectBox-placeHolder {
+  color: #d3d6d6;
+  font-size: 14px;
+  font-weight: 600;
+}
+.container-form-input-text2 {
+  color: #888;
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 15px;
+}
+.selectBox-option {
+  color: #888;
+  font-size: 14px;
+  font-weight: 600;
+}
+.container-form-inputPW {
+  width: 330px;
+  height: 46px;
+  border-radius: 5px;
+  border: 1px solid #e1e2e3;
+  background: #fff;
+  margin-top: 6px;
+  padding: 0px 0px 0px 0px;
+}
+.container-form-inputPW::placeholder {
+  color: #d3d6d6;
+  font-size: 14px;
+  font-weight: 600;
+}
+.container-form-logInButton {
+  width: 330px;
+  height: 49px;
+  border-radius: 90px;
+  background: #f2f4f7;
+  margin-top: 35px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  cursor: pointer;
+}
+.container-form-logInButton-text {
+  color: #ccc;
+  font-size: 16px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.container-footer {
+  width: 330px;
+  height: auto;
+  margin-top: 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.container-footer-text1 {
+  color: #ccc;
+  font-size: 11px;
+  font-weight: 700;
+}
+.container-footer-text2 {
+  color: #ccc;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 10px;
+  text-decoration: none;
+}

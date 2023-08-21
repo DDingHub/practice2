@@ -1,0 +1,147 @@
+.InfoBody {
+  display: flex;
+  flex-direction: column;
+  margin-top: 13.8;
+  width: 1060px;
+  height: 100%;
+}
+.InfoBody-bar {
+  display: flex;
+  flex-direction: row;
+  height: 100px;
+  width: 100%;
+  align-items: center;
+  border-bottom: 1px solid #9c9c9c;
+}
+.InfoBody-bar-dday {
+  width: 77.48px;
+  height: 40.8px;
+  border-radius: 27px;
+  background: #36f;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+.InfoBody-bar-dday-text {
+  color: #fff;
+  font-size: 19px;
+  font-weight: 700;
+}
+.InfoBody-bar-title {
+  margin-left: 14.52px;
+  color: #000;
+  font-size: 22px;
+  font-weight: 700;
+}
+.InfoBody-container {
+  display: flex;
+  flex-direction: column;
+}
+.InfoBody-container-top {
+  display: flex;
+  flex-direction: row;
+  margin-top: 74px;
+  height: 467px;
+  width: 100%;
+}
+.InfoBody-container-img {
+  width: 334px;
+  height: 467px;
+  border-radius: 5px;
+}
+.InfoBody-container-infoCard {
+  display: flex;
+  flex-direction: column;
+  width: 680px;
+  height: 467px;
+  margin: 5px 0px 0px 46px;
+  justify-content: space-between;
+}
+.InfoBody-container-infoCard-textBlock {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.InfoBody-container-infoCard-textBlock-Bold {
+  width: 80px;
+  color: #000;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.InfoBody-container-infoCard-textBlock-thin {
+  font-size: 14px;
+  color: #666;
+}
+.InfoBody-container-infoCard-button {
+  width: 276.375px;
+  height: 67px;
+  border-radius: 5px;
+  background: #36f;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 5px;
+}
+.InfoBody-container-infoCard-button-text {
+  color: #fff;
+  font-size: 20px;
+  font-weight: 600;
+  display: flex;
+  flex-direction: row;
+}
+
+.InfoBody-container-bottom {
+  display: flex;
+  flex-direction: column;
+  margin-top: 71px;
+}
+.InfoBody-container-bottom-bar {
+  display: flex;
+  flex-direction: row;
+  height: 44px;
+}
+.InfoBody-container-bottom-bar-moreInfo {
+  width: 50%;
+
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+.InfoBody-container-bottom-bar-moreInfo-text {
+  font-size: 20px;
+  font-weight: 700;
+}
+.InfoBody-container-bottom-bar-team {
+  width: 50%;
+  border-bottom: 2px solid #9c9c9c;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+.InfoBody-container-bottom-bar-team-text {
+  font-size: 20px;
+  font-weight: 700;
+}
+.InfoBody-container-bottom-deepInfo {
+  margin-top: 66px;
+  font-size: 20px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.InfoBody-container-bottom-deepInfo img {
+  width: max-content;
+  height: max-content;
+}
+.IB-blue {
+  color: #2b33ff;
+  border-bottom: 5px solid #2b33ff;
+}
+.IB-gray {
+  color: #666;
+  border-bottom: 1px solid #666;
+  cursor: pointer;
+}

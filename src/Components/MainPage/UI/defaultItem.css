@@ -1,0 +1,23 @@
+.wordButton {
+  width: auto;
+  height: auto;
+  background-color: transparent;
+  border: none;
+  padding: 0px 0px;
+}
+
+.wordLink {
+  cursor: pointer;
+  text-decoration: none;
+}
+.dis-col-cen {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.dis-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}

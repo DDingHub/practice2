@@ -1,0 +1,26 @@
+.TextButton {
+  display: flex;
+  align-items: center;
+  margin-bottom: 19px;
+  width: 334.8px;
+  height: 108px;
+  border-radius: 10px;
+  border: 1px solid #e0ebf5;
+  background: #eaf7ff;
+  cursor: pointer;
+}
+.TextButton-text {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  justify-content: center;
+  margin-left: 26px;
+  margin-right: 15px;
+  width: 252px;
+  height: 42px;
+  color: #36f;
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 600;
+  text-align: left;
+}

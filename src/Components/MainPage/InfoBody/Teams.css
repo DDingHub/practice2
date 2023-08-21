@@ -1,0 +1,192 @@
+.jobCard-button {
+  width: 10px;
+  height: 10px;
+  border-radius: 100%;
+  background-color: #fff;
+  border: 20px solid #e4e4e4;
+  margin: 26px 0px 0px 0px;
+}
+.JobCard-button-clicked {
+  border: 3px solid #36f;
+}
+
+.teamContainer {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.mT-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+.mT-container-bar {
+  display: flex;
+  flex-direction: row;
+}
+.mT-container-bar-img {
+  width: 15px;
+  height: 12px;
+  position: absolute;
+  top: 14px;
+  left: -23px;
+}
+.mT-container-bar-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  margin-left: 40px;
+}
+.mT-container-bar-text-bold {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.mT-container-bar-text-thin {
+  font-size: 13px;
+  font-weight: 400;
+}
+.mT-container-bar-edit {
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  right: -700px;
+  top: 0px;
+}
+.mT-container-line {
+  width: 100%;
+  height: 1.5px;
+  background: #d9d9d9;
+  margin-bottom: 14px;
+  margin-top: 25px;
+}
+.mT-container-title {
+  color: #000;
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 9px;
+}
+.mT-container-input {
+  width: 100%;
+  height: 42px;
+  border-radius: 5px;
+  background: #f2f4f7;
+  border: none;
+  margin-bottom: 23px;
+  outline: none;
+  color: #9c9c9c;
+  font-size: 14px;
+  font-weight: 600;
+  box-sizing: border-box;
+  padding: 5px 10px 5px 10px;
+}
+.mT-container-input-tendency {
+  width: 90%;
+  height: 42px;
+  border-radius: 5px 0px 0px 5px;
+  background: #f2f4f7;
+  border: none;
+  margin-bottom: 23px;
+  outline: none;
+  color: #9c9c9c;
+  font-size: 14px;
+  font-weight: 600;
+  box-sizing: border-box;
+  padding: 5px 10px 5px 10px;
+}
+.mT-container-input-tendency-button {
+  position: absolute;
+  width: 9%;
+  height: 42px;
+  background: #f2f4f7;
+  border: none;
+  border-radius: 0px 5px 5px 0px;
+  border-left: #d9d9d9;
+  cursor: pointer;
+  border-left: 1px solid #c7c7c7;
+}
+.mT-container-input::placeholder {
+  color: #999;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: pretendard;
+}
+.mT-container-input-big {
+  width: 100%;
+  height: 186px;
+  border-radius: 5px;
+  background: #f2f4f7;
+  border: none;
+  margin-bottom: 23px;
+  outline: none;
+  color: #9c9c9c;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: start;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: start;
+}
+.mT-container-input-big-text {
+  color: #999;
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 10px;
+  margin-left: 10px;
+}
+.mT-container-input-big-input {
+  border: none;
+  width: 100%;
+  height: 100%;
+  color: #999;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 26px 20px 26px 20px;
+  background: #f2f4f7;
+  box-sizing: border-box;
+  text-align: left;
+  font-family: pretendard;
+  resize: none; /* 사용자가 크기를 조절하지 못하게 하려면 추가 */
+  overflow: hidden;
+}
+.mT-container-input-big-input:focus {
+  outline: none;
+}
+.mT-container-title-explain {
+  color: #999;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 7px;
+}
+.mT-container-jobContainer {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 23px;
+}
+.mT-container-submit-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-top: 69px;
+}
+.mT-container-submit {
+  width: 330px;
+  height: 55px;
+  border-radius: 90px;
+  background: #36f;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  font-size: 20px;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+}

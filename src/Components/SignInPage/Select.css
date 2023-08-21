@@ -1,0 +1,36 @@
+.custom-select {
+  position: relative;
+  width: 200px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.selected-option {
+  padding: 8px;
+  cursor: pointer;
+}
+
+.options {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  position: absolute;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  display: none;
+}
+
+.open {
+  display: block;
+}
+
+.options li {
+  padding: 8px;
+  cursor: pointer;
+}
+
+.options li:hover {
+  background-color: #f2f2f2;
+}

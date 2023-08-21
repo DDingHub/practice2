@@ -1,0 +1,20 @@
+.MakeTeamButton {
+  width: 172px;
+  height: 59px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  border-radius: 90px;
+  background: #36f;
+  align-items: center;
+  cursor: pointer;
+  margin-top: 40px;
+}
+.MakeTeamButton-text {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  margin-left: 10px;
+}

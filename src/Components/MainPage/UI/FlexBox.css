@@ -1,0 +1,8 @@
+.FlexBox {
+  display: flex;
+
+  justify-content: start;
+  align-items: center;
+  width: auto;
+  height: auto;
+}

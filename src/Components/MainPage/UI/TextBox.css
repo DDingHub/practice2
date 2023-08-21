@@ -1,0 +1,33 @@
+.GrayTag {
+  border-radius: 90px;
+  background: #f2f4f7;
+  width: fit-content;
+  padding: 10px 14px 10px 14px;
+  box-sizing: border-box;
+  margin-right: 9px;
+}
+.GrayTag-text {
+  color: #36f;
+  font-family: Pretendard;
+  font-size: 15px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+}
+.GrayBox {
+  border-radius: 10px;
+  background: #f2f4f7;
+  width: 100%;
+  padding: 10px 20px 10px 20px;
+  box-sizing: border-box;
+  margin-right: 100%;
+}
+.GrayBox-text {
+  color: #000;
+  font-family: Pretendard;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+  text-align: start;
+}

@@ -1,0 +1,40 @@
+.TypeTest {
+  width: 100vw;
+  height: 100vw;
+}
+.TypeTest-bar {
+  width: 1920px;
+  height: 72px;
+  background: #fff;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.TypeTest-bar-container {
+  width: 250px;
+  height: 40px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+.TypeTest-bar-text {
+  font-family: "PyeongChangPeace";
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 700;
+  color: #002274;
+  padding-left: 7px;
+}
+
+.TypeTest-background {
+  width: 100vw;
+  height: 100vw;
+  background: #f8f8fa;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: center;
+}

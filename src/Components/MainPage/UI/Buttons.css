@@ -1,0 +1,40 @@
+.BlueButton {
+  border-radius: 90px;
+  background: #36f;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+.BlueButton-text {
+  color: #fff;
+  text-align: center;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+}
+.BlueXButton {
+  border-radius: 19.5px;
+  border: 1px solid #36f;
+  background: #fff;
+  padding: 10px 15px 10px 15px;
+  box-sizing: border-box;
+  width: fit-content;
+  display: flex;
+  flex-direction: row;
+  margin-left: 9px;
+}
+.BlueXButton-text {
+  color: #36f;
+  font-family: Pretendard;
+  font-size: 15px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+}
+.BlueXButton-x {
+  margin-left: 9px;
+  cursor: pointer;
+}

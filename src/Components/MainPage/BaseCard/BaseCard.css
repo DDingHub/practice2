@@ -1,0 +1,110 @@
+.BaseCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: start;
+}
+.comp-slider {
+  height: 588px;
+  width: 1060px;
+}
+.comp-slider-bar {
+  width: 100%;
+  height: 85px;
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.comp-slider-chevron {
+  width: 36px;
+  height: 36px;
+}
+.comp-slider-bar-text {
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+.comp-slider-bar-text-bold {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: normal;
+}
+.comp-slider-bar-text-thin {
+  font-size: 22px;
+  font-weight: 300;
+}
+.comp-slider-main {
+  width: 1060px;
+  height: 300px;
+  display: flex;
+  flex-direction: row;
+  align-items: start;
+  /* overflow: hidden; */
+  transition: 0.5s;
+  transform: translate();
+  margin-top: 53px;
+}
+.comp-slider-main-card {
+  width: 250px;
+  height: 423px;
+  margin-right: 20px;
+}
+.comp-slider-main-card-img-container {
+  position: relative;
+  width: 250px;
+  height: 355px;
+  z-index: 0;
+}
+.comp-slider-main-card-img {
+  position: relative;
+  width: 250px;
+  height: 355px;
+  z-index: 1;
+  border-radius: 5px;
+  background: #eaeaea;
+  cursor: pointer;
+}
+.comp-slider-main-card-img-dday {
+  position: absolute;
+  width: 96px;
+  height: 39px;
+  color: #fff;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  bottom: 0px;
+  right: 0px;
+  border-radius: 5px 0px;
+}
+.comp-slider-main-card-img-dday-text {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+}
+.comp-slider-main-card-text {
+  width: 100%;
+  height: 68px;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  justify-content: center;
+}
+.comp-slider-main-card-text-bold {
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.comp-slider-main-card-text-thin {
+  font-size: 14px;
+  margin-top: 7px;
+  font-weight: 400px;
+}
