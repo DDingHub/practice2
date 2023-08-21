@@ -97,7 +97,7 @@ def save_contest_data():
 #공모전 목록 보여주기
 class ContestListAPIView(APIView):
     def get(self, request):
-        save_contest_data()
+        # save_contest_data()
         contests = Contest.objects.filter(isSchool=False)
         serializer = ContestSerializer(contests, many=True)
         return Response(serializer.data)

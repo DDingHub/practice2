@@ -26,7 +26,7 @@ class Team(models.Model):
     teamname = models.CharField(max_length=100,null=True)
     call = models.CharField(max_length=100,null=True)
     detail = models.TextField(null=True)
-    tendency = models.TextField(default="[]")
+    tendency = models.TextField(default="[]", null= True)
     contest = models.ForeignKey(Contest, on_delete=models.CASCADE)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     dev_capacity = models.PositiveIntegerField(default=0)
