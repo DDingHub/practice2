@@ -174,6 +174,7 @@ class ContestDetailAPIView(APIView):
             errors = {}
             errors.update(team_form.errors)
             return Response({'error': errors}, status=status.HTTP_400_BAD_REQUEST)
+        
 
 #팀 세부페이지
 class TeamDetailAPIView(APIView):
@@ -226,6 +227,29 @@ class TeamDetailAPIView(APIView):
             Notification.objects.create(user=team.created_by, message=notification_message)
 
         return Response({"message": "팀 지원이 완료되었습니다. 팀장의 승인을 기다려주세요."},status=status.HTTP_201_CREATED)
+    
+    #팀 수정하기
+    def put(self, request, contestPk, teamPk):
+        contest = get_object_or_404(Contest, pk=contestPk)
+        team = get_object_or_404(Team, pk=teamPk)
+        team_form = TeamForm(request.data, instance=team)
+
+        if team_form.is_valid():
+            updated_team = team_form.save(commit=False)
+            updated_team.contest = contest
+            updated_team.created_by = request.user.id
+            updated_team.tendency = json.dumps(request.data.get('tendency'))
+            updated_team.save()
+
+            response_data = {
+                "message": "팀이 수정되었습니다.",
+            }
+
+            return Response(response_data, status=status.HTTP_200_OK)
+        else:
+            errors = {}
+            errors.update(team_form.errors)
+            return Response({'error': errors}, status=status.HTTP_400_BAD_REQUEST)
 
 # 회원가입
 class SignUpAPIView(APIView):
