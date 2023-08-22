@@ -76,6 +76,15 @@ def save_contest_data():
                             comm_desc_text = ' '.join(comm_desc_text)
                         dicttt['상세정보'] = comm_desc_text
 
+                    # 조회수(인기순) 추가
+                    read_span = soup2.find("span", class_="read")
+                    if read_span:
+                        read_text = read_span.get_text(strip=True)
+                        if "조회수 :" in read_text:
+                            view_text = read_text.split("조회수 :")[1]
+                            views = int(view_text.replace(',', '').strip())
+                            dicttt['조회수'] = views
+
                     # 중복된 데이터 검사 및 제거
                     if Contest.objects.filter(title=dicttt.get('제목')).exists():
                         continue  # 이미 저장된 제목인 경우 건너뜁니다.
@@ -92,17 +101,25 @@ def save_contest_data():
                             prize_first=dicttt.get('1등 상금'),
                             website=dicttt.get('홈페이지'),
                             details=dicttt.get('상세정보'),
-                            registration_date=datetime.datetime.now()
+                            registration_date=datetime.datetime.now(),
+                            viewCount = dicttt.get('조회수')
                         )
                         contest.save()
 
 #공모전 목록 보여주기
 class ContestListAPIView(APIView):
     def get(self, request):
-        save_contest_data()
-        contests = Contest.objects.filter(isSchool=False).order_by('-registration_date')
+        # save_contest_data()
+        order_by = request.data.get("order_by")
+
+        if order_by == "viewCount":
+            contests = Contest.objects.filter(isSchool=False).order_by('-viewCount')
+        else:
+            contests = Contest.objects.filter(isSchool=False).order_by('-registration_date')
         serializer = ContestSerializer(contests, many=True)
         return Response(serializer.data)
+    def put(self, request):
+        return self.get(request)
 
 #교내 공모전 목록
 class DDingContestListAPIView(APIView):

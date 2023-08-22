@@ -41,3 +41,7 @@ pip install requests
 "details": "",
 "isSchool":"true" #false로 할 시 교외 공모전으로 생성 됨
 }
+
+# 공모전 정렬
+
+{"order_by":"viewCount"}
