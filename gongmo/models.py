@@ -16,6 +16,7 @@ class Contest(models.Model):
     website = models.URLField()
     details = models.TextField()
     isSchool = models.BooleanField(default=False)
+    registration_date = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
         return self.title

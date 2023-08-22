@@ -19,6 +19,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.parsers import JSONParser
 from django.core.exceptions import ObjectDoesNotExist
+import datetime
 
 url = "https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gp="
 
@@ -90,15 +91,16 @@ def save_contest_data():
                             prize_total=dicttt.get('총 상금'),
                             prize_first=dicttt.get('1등 상금'),
                             website=dicttt.get('홈페이지'),
-                            details=dicttt.get('상세정보')
+                            details=dicttt.get('상세정보'),
+                            registration_date=datetime.datetime.now()
                         )
                         contest.save()
 
 #공모전 목록 보여주기
 class ContestListAPIView(APIView):
     def get(self, request):
-        # save_contest_data()
-        contests = Contest.objects.filter(isSchool=False)
+        save_contest_data()
+        contests = Contest.objects.filter(isSchool=False).order_by('-registration_date')
         serializer = ContestSerializer(contests, many=True)
         return Response(serializer.data)
 
@@ -115,7 +117,6 @@ class DDingContestListAPIView(APIView):
             dding_contest_form.save()
             return Response(dding_contest_form.cleaned_data, status=status.HTTP_201_CREATED)
         return Response(dding_contest_form.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 #공모전 세부페이지
 class ContestDetailAPIView(APIView):
@@ -357,7 +358,7 @@ class TeamManagementAPIView(APIView):
             request.data.get("user_id")
             return Response({"errorasdfaesf": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
+# 알림
 class NotificationListAPIView(APIView):
     def get(self, request, userPk):
         user = get_object_or_404(User, pk=userPk)
@@ -385,14 +386,13 @@ class ScrapCreateAPIView(APIView):
             }
             return Response({'message': scrap_data}, status=status.HTTP_201_CREATED)
         
-#스크랩목록보기
+# 스크랩목록보기
 class ScrapListAPIView(ListAPIView):
     serializer_class = ScrapSerializer
 
     def get_queryset(self):
         user_pk = self.kwargs["userPk"]
         return Scrap.objects.filter(user__pk=user_pk)
-
 
 # 찜하기 (팀 찜하기)
 class JjimCreateAPIView(APIView):
@@ -414,7 +414,7 @@ class JjimCreateAPIView(APIView):
             }
             return Response({'message': jjim_data}, status=status.HTTP_201_CREATED)
 
-#찜 목록보기
+# 찜 목록보기
 class JjimListAPIView(ListAPIView):
     serializer_class = JjimSerializer
 
@@ -422,7 +422,7 @@ class JjimListAPIView(ListAPIView):
         user_pk = self.kwargs["userPk"]
         return Jjim.objects.filter(user__pk=user_pk)
 
-#유저 정보받기
+# 유저 정보받기
 class UserInfoAPIView(APIView):
     def post(self, request):
         data = request.data.copy()
