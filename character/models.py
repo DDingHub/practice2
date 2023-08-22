@@ -17,6 +17,7 @@ class Character(models.Model):
     type_worst = models.CharField(max_length=255)
     type_worst_message = models.TextField()
     type_worst_src = models.TextField()
+    # typeId = models.IntegerField(null=True)
 
 class MyCharacter(models.Model):
     character = models.ForeignKey(Character, on_delete=models.CASCADE, related_name = "r_myCharacter")

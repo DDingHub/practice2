@@ -99,7 +99,7 @@ def save_contest_data():
 #공모전 목록 보여주기
 class ContestListAPIView(APIView):
     def get(self, request):
-        save_contest_data()
+        # save_contest_data()
         contests = Contest.objects.filter(isSchool=False)
         serializer = ContestSerializer(contests, many=True)
         return Response(serializer.data)
@@ -242,8 +242,11 @@ class LoginAPIView(APIView):
 # 로그아웃
 class LogoutAPIView(APIView):
     def post(self, request):
-        logout(request)
-        return Response({'message': '로그아웃이 완료되었습니다.'}, status=status.HTTP_200_OK)
+        if request.user.is_authenticated:
+            logout(request)
+            return Response({'message': '로그아웃되었습니다.'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': '로그인되어 있지 않습니다.'}, status=status.HTTP_401_UNAUTHORIZED)
 
 #My팀 보기(지원한 팀, 만든 팀)
 class MyTeamAPIView(APIView):

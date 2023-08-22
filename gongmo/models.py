@@ -62,13 +62,6 @@ class Jjim(models.Model):
 
     class Meta: unique_together = ['user','team']
 
-from django.db import models
-from django.contrib.auth.models import User
-from django.utils import timezone
-
-from django.db import models
-from django.contrib.auth.models import User
-
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     nickname = models.CharField(max_length=100)

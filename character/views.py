@@ -15,11 +15,11 @@ class CharacterAPIView(APIView):
     #     serializer = CharacterSerializer(characters, many=True)
     #     return Response(serializer.data)
     def post(self, request):
-        type_id = request.data.get('typeId')
+        type_id = request.data.get('typeID')
+        print(type_id)
         characters = Character.objects.filter(id=type_id)
         serializer = CharacterSerializer(characters, many=True)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
 
     # [유형추가]
     # def post(self,request):
