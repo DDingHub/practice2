@@ -21,9 +21,9 @@ from rest_framework.parsers import JSONParser
 from django.core.exceptions import ObjectDoesNotExist
 from datetime import datetime,timedelta
 
-url = "https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gp="
 
 def save_contest_data():
+    url = "https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gp="
     for pageNum in range(1, 2):
         response = requests.get(url + str(pageNum))
         html_content = response.text
@@ -497,15 +497,3 @@ class JjimListAPIView(ListAPIView):
     def get_queryset(self):
         user_pk = self.kwargs["userPk"]
         return Jjim.objects.filter(user__pk=user_pk)
-
-# 유저 정보받기
-class UserInfoAPIView(APIView):
-    def post(self, request):
-        data = request.data.copy()
-        data['user'] = request.user.id
-
-        serializer = UserInfoSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save(user=request.user.id)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
