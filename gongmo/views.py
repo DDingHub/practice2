@@ -19,7 +19,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.parsers import JSONParser
 from django.core.exceptions import ObjectDoesNotExist
-import datetime
+from datetime import datetime,timedelta
 
 url = "https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gp="
 
@@ -106,7 +106,13 @@ def save_contest_data():
                         )
                         contest.save()
 
-#공모전 목록 보여주기
+# 날짜변환 함수
+def parse_application_period(application_period):
+    parts = application_period.split("~")
+    end_date = parts[1].split("D")[0].strip() 
+    return end_date
+
+# 공모전 목록 보여주기
 class ContestListAPIView(APIView):
     def get(self, request):
         # save_contest_data()
@@ -114,6 +120,9 @@ class ContestListAPIView(APIView):
 
         if order_by == "viewCount":
             contests = Contest.objects.filter(isSchool=False).order_by('-viewCount')
+        elif order_by == "application_period":
+            contests = Contest.objects.filter(isSchool=False)
+            contests = sorted(contests, key=lambda contest: parse_application_period(contest.application_period), reverse=True)
         else:
             contests = Contest.objects.filter(isSchool=False).order_by('-registration_date')
         serializer = ContestSerializer(contests, many=True)
