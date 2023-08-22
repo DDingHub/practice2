@@ -6,4 +6,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('gongmo.urls')),
     path('', include('mypage.urls')),
+    path('', include('character.urls')),
 ]

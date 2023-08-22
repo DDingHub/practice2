@@ -36,7 +36,8 @@ class UserMyPageView(APIView):
             "type_message": user_profile.type_message,
         }
 
-        return Response(response_data, status=status.HTTP_200_OK)    
+        return Response(response_data, status=status.HTTP_200_OK)
+       
 class UserProfileJsonView(APIView):
     def post(self, request, *args, **kwargs):
         user_profile = UserProfile.objects.filter(user=request.user).first()
