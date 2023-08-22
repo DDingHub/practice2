@@ -101,7 +101,7 @@ def save_contest_data():
                             prize_first=dicttt.get('1등 상금'),
                             website=dicttt.get('홈페이지'),
                             details=dicttt.get('상세정보'),
-                            registration_date=datetime.datetime.now(),
+                            registration_date=datetime.now(),
                             viewCount = dicttt.get('조회수')
                         )
                         contest.save()
