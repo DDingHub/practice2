@@ -33,6 +33,17 @@ class TeamSerializer(serializers.ModelSerializer):
     def get_design_members(self, team):
         design_members = team.members.filter(jickgoon='design')
         return MemberSerializer(design_members, many=True).data
+    
+    #tendency고치는
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        tendency_json = instance.tendency
+        try:
+            tendency_list = json.loads(tendency_json)
+        except json.JSONDecodeError:
+            tendency_list = []
+        representation['tendency'] = tendency_list
+        return representation
 
 class ScrapSerializer(serializers.ModelSerializer):
   

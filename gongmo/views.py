@@ -19,6 +19,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.parsers import JSONParser
 from django.core.exceptions import ObjectDoesNotExist
+from datetime import datetime,timedelta
 
 url = "https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gp="
 
@@ -75,6 +76,15 @@ def save_contest_data():
                             comm_desc_text = ' '.join(comm_desc_text)
                         dicttt['상세정보'] = comm_desc_text
 
+                    # 조회수(인기순) 추가
+                    read_span = soup2.find("span", class_="read")
+                    if read_span:
+                        read_text = read_span.get_text(strip=True)
+                        if "조회수 :" in read_text:
+                            view_text = read_text.split("조회수 :")[1]
+                            views = int(view_text.replace(',', '').strip())
+                            dicttt['조회수'] = views
+
                     # 중복된 데이터 검사 및 제거
                     if Contest.objects.filter(title=dicttt.get('제목')).exists():
                         continue  # 이미 저장된 제목인 경우 건너뜁니다.
@@ -90,17 +100,35 @@ def save_contest_data():
                             prize_total=dicttt.get('총 상금'),
                             prize_first=dicttt.get('1등 상금'),
                             website=dicttt.get('홈페이지'),
-                            details=dicttt.get('상세정보')
+                            details=dicttt.get('상세정보'),
+                            registration_date=datetime.now(),
+                            viewCount = dicttt.get('조회수')
                         )
                         contest.save()
 
-#공모전 목록 보여주기
+# 날짜변환 함수
+def parse_application_period(application_period):
+    parts = application_period.split("~")
+    end_date = parts[1].split("D")[0].strip() 
+    return end_date
+
+# 공모전 목록 보여주기
 class ContestListAPIView(APIView):
     def get(self, request):
-        save_contest_data()
-        contests = Contest.objects.filter(isSchool=False)
+        # save_contest_data()
+        order_by = request.data.get("order_by")
+
+        if order_by == "viewCount":
+            contests = Contest.objects.filter(isSchool=False).order_by('-viewCount')
+        elif order_by == "application_period":
+            contests = Contest.objects.filter(isSchool=False)
+            contests = sorted(contests, key=lambda contest: parse_application_period(contest.application_period), reverse=True)
+        else:
+            contests = Contest.objects.filter(isSchool=False).order_by('-registration_date')
         serializer = ContestSerializer(contests, many=True)
         return Response(serializer.data)
+    def put(self, request):
+        return self.get(request)
 
 #교내 공모전 목록
 class DDingContestListAPIView(APIView):
@@ -115,7 +143,6 @@ class DDingContestListAPIView(APIView):
             dding_contest_form.save()
             return Response(dding_contest_form.cleaned_data, status=status.HTTP_201_CREATED)
         return Response(dding_contest_form.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 #공모전 세부페이지
 class ContestDetailAPIView(APIView):
@@ -132,9 +159,22 @@ class ContestDetailAPIView(APIView):
         team_form = TeamForm(request.data)
 
         if team_form.is_valid():
+            leaderJickgoon = request.data.get('leaderJickgoon')
             team = team_form.save(commit=False)
             team.contest = contest
-            team.created_by = request.user
+            team.created_by = request.user.id
+            team.tendency = json.dumps(request.data.get('tendency'))
+            team.save()
+
+            Member.objects.create(team=team, user=request.user.id, jickgoon=leaderJickgoon)
+
+            if leaderJickgoon == 'dev':
+              team.dev += 1
+            elif leaderJickgoon == 'plan':
+                team.plan += 1
+            elif leaderJickgoon == 'design':
+                team.design += 1
+            
             team.save()
 
             response_data = {
@@ -146,6 +186,7 @@ class ContestDetailAPIView(APIView):
             errors = {}
             errors.update(team_form.errors)
             return Response({'error': errors}, status=status.HTTP_400_BAD_REQUEST)
+        
 
 #팀 세부페이지
 class TeamDetailAPIView(APIView):
@@ -191,13 +232,36 @@ class TeamDetailAPIView(APIView):
             return Response({"error": "이미 꽉찬 직군입니다."},
                             status=status.HTTP_400_BAD_REQUEST)
         
-        application = Application.objects.create(team=team, applicant=request.user, jickgoon=jickgoon_type)
+        application = Application.objects.create(team=team, applicant=request.user.id, jickgoon=jickgoon_type)
 
-        if team.created_by != request.user:
+        if team.created_by != request.user.id:
             notification_message = f"{request.user.username}님 {team.name}의 팀원이 되고 싶어해요!"
             Notification.objects.create(user=team.created_by, message=notification_message)
 
         return Response({"message": "팀 지원이 완료되었습니다. 팀장의 승인을 기다려주세요."},status=status.HTTP_201_CREATED)
+    
+    #팀 수정하기
+    def put(self, request, contestPk, teamPk):
+        contest = get_object_or_404(Contest, pk=contestPk)
+        team = get_object_or_404(Team, pk=teamPk)
+        team_form = TeamForm(request.data, instance=team)
+
+        if team_form.is_valid():
+            updated_team = team_form.save(commit=False)
+            updated_team.contest = contest
+            updated_team.created_by = request.user.id
+            updated_team.tendency = json.dumps(request.data.get('tendency'))
+            updated_team.save()
+
+            response_data = {
+                "message": "팀이 수정되었습니다.",
+            }
+
+            return Response(response_data, status=status.HTTP_200_OK)
+        else:
+            errors = {}
+            errors.update(team_form.errors)
+            return Response({'error': errors}, status=status.HTTP_400_BAD_REQUEST)
 
 # 회원가입
 class SignUpAPIView(APIView):
@@ -307,7 +371,7 @@ class TeamManagementAPIView(APIView):
 
         application = get_object_or_404(Application, id=application_id, team__created_by=user)
 
-        if is_approved:
+        if is_approved == "true":
             application.is_approved = True
             application.save()
             applicant = application.applicant
@@ -357,6 +421,7 @@ class TeamManagementAPIView(APIView):
             return Response({"errorasdfaesf": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+# 알림
 class NotificationListAPIView(APIView):
     def get(self, request, userPk):
         user = get_object_or_404(User, pk=userPk)
@@ -364,11 +429,24 @@ class NotificationListAPIView(APIView):
         serializer = NotificationSerializer(notifications, many=True)
         return Response(serializer.data)
 
+    def post(self, request, userPk):
+        user = get_object_or_404(User, pk=userPk)
+        notification_id = request.data.get("notification_id")
+        is_read = request.data.get("is_read")
+
+        notification = get_object_or_404(Notification, id=notification_id, user=user)
+        if is_read == "true":
+            notification.is_read = True
+            notification.delete()
+            return Response({"message": "알림이 삭제되었습니다."}, status=status.HTTP_200_OK)
+        else:
+            return Response({"error": "잘못된 요청입니다."}, status=status.HTTP_400_BAD_REQUEST)
+        
 # 스크랩 하기 (공모전 북마크하기)
 class ScrapCreateAPIView(APIView):
     def post(self,request):
         contest_id = request.data.get("contest")
-        user =request.user
+        user =request.user.id
 
         try:
             scrap = Scrap.objects.get(user=user, contest_id=contest_id)
@@ -384,7 +462,7 @@ class ScrapCreateAPIView(APIView):
             }
             return Response({'message': scrap_data}, status=status.HTTP_201_CREATED)
         
-#스크랩목록보기
+# 스크랩목록보기
 class ScrapListAPIView(ListAPIView):
     serializer_class = ScrapSerializer
 
@@ -392,12 +470,11 @@ class ScrapListAPIView(ListAPIView):
         user_pk = self.kwargs["userPk"]
         return Scrap.objects.filter(user__pk=user_pk)
 
-
 # 찜하기 (팀 찜하기)
 class JjimCreateAPIView(APIView):
     def post(self,request):
         team_id = request.data.get("team")
-        user =request.user
+        user =request.user.id
 
         try:
             jjim = Jjim.objects.get(user=user, team_id=team_id)
@@ -413,7 +490,7 @@ class JjimCreateAPIView(APIView):
             }
             return Response({'message': jjim_data}, status=status.HTTP_201_CREATED)
 
-#찜 목록보기
+# 찜 목록보기
 class JjimListAPIView(ListAPIView):
     serializer_class = JjimSerializer
 
@@ -421,7 +498,7 @@ class JjimListAPIView(ListAPIView):
         user_pk = self.kwargs["userPk"]
         return Jjim.objects.filter(user__pk=user_pk)
 
-#유저 정보받기
+# 유저 정보받기
 class UserInfoAPIView(APIView):
     def post(self, request):
         data = request.data.copy()
@@ -429,6 +506,6 @@ class UserInfoAPIView(APIView):
 
         serializer = UserInfoSerializer(data=data)
         if serializer.is_valid():
-            serializer.save(user=request.user)
+            serializer.save(user=request.user.id)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

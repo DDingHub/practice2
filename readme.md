@@ -11,7 +11,7 @@ pip install requests
 # 팀생성 /contest_id
 
 {"name":"팀","teamname":"1","call":"1","detail":"1",
-"dev_capacity": 1,"plan_capacity": 1,"design_capacity": 1}
+"dev_capacity": 1,"plan_capacity": 1,"design_capacity": 1,"tendency":["큐트","큐큐트트"],"leaderJickgoon":"dev"}
 
 # 팀 가입 /contest_id/team_id
 
@@ -41,3 +41,20 @@ pip install requests
 "details": "",
 "isSchool":"true" #false로 할 시 교외 공모전으로 생성 됨
 }
+
+# 스크랩 하기
+
+{"contest" : 10}
+
+# 찜 하기
+
+{"team" : 1}
+
+# 알림 삭제 하기
+
+{"notification_id":5,"is_read":"true"}
+
+# 공모전 정렬
+
+{"order_by":"viewCount"}
+{"order_by":"application_period"}
