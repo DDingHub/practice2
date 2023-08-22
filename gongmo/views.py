@@ -159,10 +159,22 @@ class ContestDetailAPIView(APIView):
         team_form = TeamForm(request.data)
 
         if team_form.is_valid():
+            leaderJickgoon = request.data.get('leaderJickgoon')
             team = team_form.save(commit=False)
             team.contest = contest
-            team.created_by = request.user.id
+            team.created_by = request.user
             team.tendency = json.dumps(request.data.get('tendency'))
+            team.save()
+
+            Member.objects.create(team=team, user=request.user, jickgoon=leaderJickgoon)
+
+            if leaderJickgoon == 'dev':
+              team.dev += 1
+            elif leaderJickgoon == 'plan':
+                team.plan += 1
+            elif leaderJickgoon == 'design':
+                team.design += 1
+            
             team.save()
 
             response_data = {
