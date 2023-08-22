@@ -162,11 +162,11 @@ class ContestDetailAPIView(APIView):
             leaderJickgoon = request.data.get('leaderJickgoon')
             team = team_form.save(commit=False)
             team.contest = contest
-            team.created_by = request.user
+            team.created_by = request.user.id
             team.tendency = json.dumps(request.data.get('tendency'))
             team.save()
 
-            Member.objects.create(team=team, user=request.user, jickgoon=leaderJickgoon)
+            Member.objects.create(team=team, user=request.user.id, jickgoon=leaderJickgoon)
 
             if leaderJickgoon == 'dev':
               team.dev += 1
@@ -232,9 +232,9 @@ class TeamDetailAPIView(APIView):
             return Response({"error": "이미 꽉찬 직군입니다."},
                             status=status.HTTP_400_BAD_REQUEST)
         
-        application = Application.objects.create(team=team, applicant=request.user, jickgoon=jickgoon_type)
+        application = Application.objects.create(team=team, applicant=request.user.id, jickgoon=jickgoon_type)
 
-        if team.created_by != request.user:
+        if team.created_by != request.user.id:
             notification_message = f"{request.user.username}님 {team.name}의 팀원이 되고 싶어해요!"
             Notification.objects.create(user=team.created_by, message=notification_message)
 
@@ -432,7 +432,7 @@ class NotificationListAPIView(APIView):
 class ScrapCreateAPIView(APIView):
     def post(self,request):
         contest_id = request.data.get("contest")
-        user =request.user
+        user =request.user.id
 
         try:
             scrap = Scrap.objects.get(user=user, contest_id=contest_id)
@@ -460,7 +460,7 @@ class ScrapListAPIView(ListAPIView):
 class JjimCreateAPIView(APIView):
     def post(self,request):
         team_id = request.data.get("team")
-        user =request.user
+        user =request.user.id
 
         try:
             jjim = Jjim.objects.get(user=user, team_id=team_id)
@@ -492,6 +492,6 @@ class UserInfoAPIView(APIView):
 
         serializer = UserInfoSerializer(data=data)
         if serializer.is_valid():
-            serializer.save(user=request.user)
+            serializer.save(user=request.user.id)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
