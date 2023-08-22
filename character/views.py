@@ -9,16 +9,25 @@ from rest_framework import status
 
 #유형테스트 목록, 유형테스트 등록(db삭제될까봐 만듦)
 class CharacterAPIView(APIView):
-    def get(self,request):
-        character = get_object_or_404(Character)
-        serializer = CharacterSerializer(character)
-        return Response(serializer.data)
-    def post(self,request):
-        character_form = CharacterForm(request.data)
-        if character_form.is_valid():
-            character_form.save()
-            return Response(character_form.cleaned_data, status=status.HTTP_201_CREATED)
-        return Response(character_form.errors, status=status.HTTP_400_BAD_REQUEST)
+    # def get(self,request):
+    #     type_id = request.data.get('typeId')
+    #     characters = Character.objects.filter(id=type_id)
+    #     serializer = CharacterSerializer(characters, many=True)
+    #     return Response(serializer.data)
+    def post(self, request):
+        type_id = request.data.get('typeId')
+        characters = Character.objects.filter(id=type_id)
+        serializer = CharacterSerializer(characters, many=True)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+    # [유형추가]
+    # def post(self,request):
+    #     character_form = CharacterForm(request.data)
+    #     if character_form.is_valid():
+    #         character_form.save()
+    #         return Response(character_form.cleaned_data, status=status.HTTP_201_CREATED)
+    #     return Response(character_form.errors, status=status.HTTP_400_BAD_REQUEST)
     
 #유형테스트 결과 유저한테 보내줌
 class MyCharacterAPIView(APIView):

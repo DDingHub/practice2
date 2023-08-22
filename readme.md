@@ -49,6 +49,7 @@ pip install requests
 # 유형 모음
 
 {
+"nickname": "상경",
 "type": "애널리스트",
 "type_src": "url",
 "type_message": "내가 집중하면 모두가 놀랄걸?",
