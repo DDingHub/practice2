@@ -134,7 +134,7 @@ class ContestDetailAPIView(APIView):
         if team_form.is_valid():
             team = team_form.save(commit=False)
             team.contest = contest
-            team.created_by = request.user
+            team.created_by = request.user.id
             team.tendency = json.dumps(request.data.get('tendency'))
             team.save()
 

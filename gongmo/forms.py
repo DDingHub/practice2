@@ -22,8 +22,7 @@ class TeamForm(forms.ModelForm):
             "detail":"팀 소개 글",
             "dev_capacity" : "개발",
             "plan_capacity" : "기획",
-            "design_capacity" : "디자인",
-            "tendency" : "팀 성향"
+            "design_capacity" : "디자인"
         }
 
         def __init__(self, *args, **kwargs):
