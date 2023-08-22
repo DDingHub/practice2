@@ -73,4 +73,7 @@ class UserProfile(models.Model):
     tendency_personality = models.JSONField(null=True, blank=True)
     tendency_MBTI = models.CharField(max_length=10)
 
-
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(default=timezone.now)
+    message = models.TextField(null=True)

@@ -98,10 +98,6 @@ class JjimSerializer(serializers.ModelSerializer):
         model = Jjim
         fields = '__all__'
 
-class Notification(models.Model):
-    # Notification 모델 필드들 정의
-    pass
-
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
