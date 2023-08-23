@@ -646,7 +646,6 @@ class NotificationListAPIView(APIView):
         notification.delete()
         return Response({"message": "알림이 삭제되었습니다."}, status=status.HTTP_200_OK)
 
-
 # 스크랩 하기 (공모전 북마크하기)
 class ScrapCreateAPIView(APIView):
     def post(self,request):
