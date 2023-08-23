@@ -7,6 +7,9 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.hashers import make_password
 import re
 import requests
+import datetime
+import jwt
+from django.conf import settings
 from bs4 import BeautifulSoup
 from django.contrib import messages
 from django.urls import reverse
@@ -21,8 +24,22 @@ from rest_framework.parsers import JSONParser
 from django.core.exceptions import ObjectDoesNotExist
 from mypage.models import UserProfile
 from .serializers import SignupSerializer
+from rest_framework.authtoken.models import Token
+from .serializers import SignupSerializer
 
 url = "https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gp="
+
+def generate_jwt_token(user):
+    secret_key = settings.SECRET_KEY  # 시크릿 키 설정
+    expiration_time = datetime.datetime.utcnow() + datetime.timedelta(days=1)  # 1일 후 만료
+
+    payload = {
+        'user_id': user.id,
+        'exp': expiration_time,
+    }
+
+    token = jwt.encode(payload, secret_key, algorithm='HS256')
+    return token
 
 def save_contest_data():
     for pageNum in range(1, 2):
@@ -207,9 +224,29 @@ class SignUpAPIView(APIView):
         serializer = SignupSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
+
+            # 사용자의 추가 정보를 생성 및 저장하는 코드
+            UserProfile.objects.create(
+                user=user,
+                nickname=serializer.validated_data['nickname'],
+                major=serializer.validated_data['major'],
+                job=serializer.validated_data['job'],
+                hobby=serializer.validated_data['hobby'],
+                dream=serializer.validated_data['dream'],
+                tendency_worktime=serializer.validated_data['tendency_worktime'],
+                tendency_personality=serializer.validated_data['tendency_personality'],
+                tendency_MBTI=serializer.validated_data['tendency_MBTI'],
+                languages_tools=serializer.validated_data['languages_tools'],
+                call=serializer.validated_data['call'],
+                introduce=serializer.validated_data['introduce'],
+                portfolio=serializer.validated_data['portfolio'],
+                user_type=serializer.validated_data['user_type'],
+                type_message=serializer.validated_data['type_message']
+            )
+
             return Response({'message': '회원가입이 완료되었습니다.'}, status=status.HTTP_201_CREATED)
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)# 로그인
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LoginAPIView(APIView):
     def post(self, request):
@@ -224,19 +261,21 @@ class LoginAPIView(APIView):
         if not user:
             return Response({'error': '잘못된 사용자 이름 또는 비밀번호입니다.'}, status=status.HTTP_401_UNAUTHORIZED)
 
-
-        
         login(request, user)
 
+        # Token 생성
+        token = generate_jwt_token(user)
+
         user_data = {
-                "id": request.user.id,
-                "username": request.user.username
-            }
+            "id": user.id,
+            "username": user.username
+        }
         
         response_data = {
-                "message": "로그인 완료.",
-                "user": user_data
-            }
+            "message": "로그인 완료.",
+            "user": user_data,
+            "access": token  # 생성된 토큰 값을 응답에 포함
+        }
         
         return Response(response_data, status=status.HTTP_201_CREATED)
 # 로그아웃

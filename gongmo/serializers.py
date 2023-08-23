@@ -11,6 +11,12 @@ class UserInfo(models.Model):
     tendency_worktime = models.CharField(max_length=20)
     tendency_personality = models.TextField()  # 이 부분도 필드 타입을 선택해야 합니다.
     tendency_MBTI = models.CharField(max_length=10)
+    languages_tools = models.TextField()
+    call = models.TextField()
+    introduce = models.TextField()
+    portfolio = models.TextField()
+    user_type = models.TextField()
+    type_message = models.TextField()
 
 class ContestSerializer(serializers.ModelSerializer):
     class Meta:
@@ -59,10 +65,18 @@ class SignupSerializer(serializers.ModelSerializer):
     tendency_worktime = serializers.CharField()
     tendency_personality = serializers.ListField(child=serializers.CharField())
     tendency_MBTI = serializers.CharField(max_length=10)
+    languages_tools = serializers.ListField(child=serializers.CharField())
+    call = serializers.CharField()
+    introduce = serializers.CharField()
+    portfolio = serializers.CharField()
+    user_type = serializers.CharField()
+    type_message = serializers.CharField()
+    nickname = serializers.CharField()
+    major = serializers.CharField()  # 'major' 필드 추가
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password', 'job', 'hobby', 'dream', 'tendency_worktime', 'tendency_personality', 'tendency_MBTI']
+        fields = ['username', 'email', 'password', 'job', 'hobby', 'dream', 'tendency_worktime', 'tendency_personality', 'tendency_MBTI', 'languages_tools', 'call', 'introduce', 'portfolio', 'user_type', 'type_message', 'nickname', 'major']  # 'major' 필드 추가
 
     def create(self, validated_data):
         job = validated_data.pop('job')
@@ -70,6 +84,14 @@ class SignupSerializer(serializers.ModelSerializer):
         dream = validated_data.pop('dream')
         tendency_personality = validated_data.pop('tendency_personality')
         tendency_MBTI = validated_data.pop('tendency_MBTI')
+        languages_tools = validated_data.pop('languages_tools')
+        call = validated_data.pop('call')
+        introduce = validated_data.pop('introduce')
+        portfolio = validated_data.pop('portfolio')
+        user_type = validated_data.pop('user_type')
+        type_message = validated_data.pop('type_message')
+        nickname = validated_data.pop('nickname')
+        major = validated_data.pop('major')  # 'major' 필드 추출
         
         user = User.objects.create_user(
             username=validated_data['username'],
@@ -80,17 +102,25 @@ class SignupSerializer(serializers.ModelSerializer):
         # 사용자의 추가 정보를 생성 및 저장하는 코드
         UserProfile.objects.create(
             user=user,
-            nickname=validated_data['username'],  # 유저네임으로 임시 대체
-            major='',  # 더미 데이터로 대체
+            nickname=nickname,
+            major=major,  # 'major' 필드 추가
             job=job,
             hobby=hobby,
             dream=dream,
             tendency_worktime=validated_data['tendency_worktime'],
             tendency_personality=tendency_personality,
-            tendency_MBTI=tendency_MBTI
+            tendency_MBTI=tendency_MBTI,
+            languages_tools=languages_tools,
+            call=call,
+            introduce=introduce,
+            portfolio=portfolio,
+            user_type=user_type,
+            type_message=type_message
         )
         
         return user
+
+
     
 class JjimSerializer(serializers.ModelSerializer):
   

@@ -65,12 +65,19 @@ class Jjim(models.Model):
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     nickname = models.CharField(max_length=100)
+    username = models.CharField(max_length=100)
     major = models.CharField(max_length=100)
     job = models.JSONField(null=True, blank=True)
     hobby = models.JSONField(null=True, blank=True)
     dream = models.JSONField(null=True, blank=True)
-    tendency_worktime = models.CharField(max_length=100)
+    tendency_worktime = models.CharField(max_length=100)  # 수정
     tendency_personality = models.JSONField(null=True, blank=True)
     tendency_MBTI = models.CharField(max_length=10)
+    languages_tools = models.JSONField(null=True, blank=True)
+    call = models.JSONField(null=True, blank=True, default=dict)
+    introduce = models.JSONField(null=True, blank=True, default=dict)
+    portfolio = models.JSONField(null=True, blank=True, default=dict)
+    user_type = models.JSONField(null=True, blank=True, default=dict)
+    type_message = models.JSONField(null=True, blank=True, default=dict)
 
 

@@ -12,6 +12,10 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 from pathlib import Path
 import os
+from django.conf import settings
+from datetime import timedelta
+import random
+import string
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -26,7 +30,12 @@ SECRET_KEY = 'django-insecure-%ba=p64-6&@ge232@&kyrnlt!tltq2ogr2zmfm0m2^07d2ked9
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
+APPEND_SLASH = False
 
+def generate_secret_key(length=50):
+    characters = string.ascii_letters + string.digits + string.punctuation
+    secret_key = ''.join(random.choice(characters) for _ in range(length))
+    return secret_key
 
 # Application definition
 
@@ -34,11 +43,13 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
+    'rest_framework.authtoken',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'gongmo',
     'rest_framework',
+    'rest_framework_jwt',
     'corsheaders',
     'mypage',
     'character',
@@ -54,6 +65,13 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
 ]
+
+JWT_AUTH = {
+    'JWT_SECRET_KEY': generate_secret_key(),
+    'JWT_ALGORITHM': 'HS256',
+    'JWT_ALLOW_REFRESH': True,
+    'JWT_EXPIRATION_DELTA': timedelta(days=1),
+}
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # 허용할 클라이언트의 출처를 추가하세요.
@@ -129,3 +147,11 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',  # 이 부분이 포함되어 있는지 확인
+        # ...
+    ],
+    # ...
+}
