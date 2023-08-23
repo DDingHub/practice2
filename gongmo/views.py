@@ -116,9 +116,11 @@ def parse_application_period(application_period):
 
 #공모전 목록 보여주기
 class ContestListAPIView(APIView):
+    ##[[[[[[put으로 필터링 하고 있는데 더 생각해보기]]]]]]
     def get(self, request):
         # save_contest_data()
         order_by = request.data.get("order_by")
+        user = request.user.id
 
         if order_by == "viewCount":
             contests = Contest.objects.filter(isSchool=False).order_by('-viewCount')
@@ -127,8 +129,16 @@ class ContestListAPIView(APIView):
             contests = sorted(contests, key=lambda contest: parse_application_period(contest.application_period), reverse=True)
         else:
             contests = Contest.objects.filter(isSchool=False).order_by('-registration_date')
-        serializer = ContestSerializer(contests, many=True)
-        return Response(serializer.data)
+
+        user_scrapped_contests = Scrap.objects.filter(user=user).values_list('contest_id', flat=True)
+
+        contest_data = []
+        for contest in contests:
+            serialized_contest = ContestSerializer(contest).data
+            serialized_contest["is_scrapped"] = contest.id in user_scrapped_contests
+            contest_data.append(serialized_contest)
+
+        return Response(contest_data)
     def put(self, request):
         return self.get(request)
 
