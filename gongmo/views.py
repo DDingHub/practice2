@@ -19,12 +19,13 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.parsers import JSONParser
 from django.core.exceptions import ObjectDoesNotExist
+from datetime import datetime,timedelta
 from mypage.models import UserProfile
 from .serializers import SignupSerializer
 
-url = "https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gp="
 
 def save_contest_data():
+    url = "https://www.wevity.com/?c=find&s=1&gub=1&cidx=20&gp="
     for pageNum in range(1, 2):
         response = requests.get(url + str(pageNum))
         html_content = response.text
@@ -77,6 +78,15 @@ def save_contest_data():
                             comm_desc_text = ' '.join(comm_desc_text)
                         dicttt['상세정보'] = comm_desc_text
 
+                    # 조회수(인기순) 추가
+                    read_span = soup2.find("span", class_="read")
+                    if read_span:
+                        read_text = read_span.get_text(strip=True)
+                        if "조회수 :" in read_text:
+                            view_text = read_text.split("조회수 :")[1]
+                            views = int(view_text.replace(',', '').strip())
+                            dicttt['조회수'] = views
+
                     # 중복된 데이터 검사 및 제거
                     if Contest.objects.filter(title=dicttt.get('제목')).exists():
                         continue  # 이미 저장된 제목인 경우 건너뜁니다.
@@ -92,17 +102,35 @@ def save_contest_data():
                             prize_total=dicttt.get('총 상금'),
                             prize_first=dicttt.get('1등 상금'),
                             website=dicttt.get('홈페이지'),
-                            details=dicttt.get('상세정보')
+                            details=dicttt.get('상세정보'),
+                            registration_date=datetime.now(),
+                            viewCount = dicttt.get('조회수')
                         )
                         contest.save()
+
+# 날짜변환 함수
+def parse_application_period(application_period):
+    parts = application_period.split("~")
+    end_date = parts[1].split("D")[0].strip() 
+    return end_date
 
 #공모전 목록 보여주기
 class ContestListAPIView(APIView):
     def get(self, request):
         # save_contest_data()
-        contests = Contest.objects.filter(isSchool=False)
+        order_by = request.data.get("order_by")
+
+        if order_by == "viewCount":
+            contests = Contest.objects.filter(isSchool=False).order_by('-viewCount')
+        elif order_by == "application_period":
+            contests = Contest.objects.filter(isSchool=False)
+            contests = sorted(contests, key=lambda contest: parse_application_period(contest.application_period), reverse=True)
+        else:
+            contests = Contest.objects.filter(isSchool=False).order_by('-registration_date')
         serializer = ContestSerializer(contests, many=True)
         return Response(serializer.data)
+    def put(self, request):
+        return self.get(request)
 
 #교내 공모전 목록
 class DDingContestListAPIView(APIView):
@@ -134,9 +162,22 @@ class ContestDetailAPIView(APIView):
         team_form = TeamForm(request.data)
 
         if team_form.is_valid():
+            leaderJickgoon = request.data.get('leaderJickgoon')
             team = team_form.save(commit=False)
             team.contest = contest
-            team.created_by = request.user
+            team.created_by = request.user.id
+            #[[[[[tendency수정필요]]]]]
+            team.save()
+
+            Member.objects.create(team=team, user=request.user.id, jickgoon=leaderJickgoon)    
+
+            if leaderJickgoon == 'dev':
+              team.dev += 1
+            elif leaderJickgoon == 'plan':
+                team.plan += 1
+            elif leaderJickgoon == 'design':
+                team.design += 1
+
             team.save()
 
             response_data = {
@@ -201,6 +242,29 @@ class TeamDetailAPIView(APIView):
 
         return Response({"message": "팀 지원이 완료되었습니다. 팀장의 승인을 기다려주세요."},status=status.HTTP_201_CREATED)
 
+        #팀 수정하기
+    def put(self, request, contestPk, teamPk):
+        contest = get_object_or_404(Contest, pk=contestPk)
+        team = get_object_or_404(Team, pk=teamPk)
+        team_form = TeamForm(request.data, instance=team)
+
+        if team_form.is_valid():
+            updated_team = team_form.save(commit=False)
+            updated_team.contest = contest
+            updated_team.created_by = request.user.id
+            updated_team.tendency = json.dumps(request.data.get('tendency'))
+            updated_team.save()
+
+            response_data = {
+                "message": "팀이 수정되었습니다.",
+            }
+
+            return Response(response_data, status=status.HTTP_200_OK)
+        else:
+            errors = {}
+            errors.update(team_form.errors)
+            return Response({'error': errors}, status=status.HTTP_400_BAD_REQUEST)
+        
 # 회원가입
 class SignUpAPIView(APIView):
     def post(self, request):
@@ -362,6 +426,19 @@ class NotificationListAPIView(APIView):
         notifications = Notification.objects.filter(user=user).order_by('-created_at')
         serializer = NotificationSerializer(notifications, many=True)
         return Response(serializer.data)
+    
+    def post(self, request, userPk):
+        user = get_object_or_404(User, pk=userPk)
+        notification_id = request.data.get("notification_id")
+        is_read = request.data.get("is_read")
+
+        notification = get_object_or_404(Notification, id=notification_id, user=user)
+        if is_read == "true":
+            notification.is_read = True
+            notification.delete()
+            return Response({"message": "알림이 삭제되었습니다."}, status=status.HTTP_200_OK)
+        else:
+            return Response({"error": "잘못된 요청입니다."}, status=status.HTTP_400_BAD_REQUEST)
 
 # 스크랩 하기 (공모전 북마크하기)
 class ScrapCreateAPIView(APIView):
@@ -420,7 +497,7 @@ class JjimListAPIView(ListAPIView):
         user_pk = self.kwargs["userPk"]
         return Jjim.objects.filter(user__pk=user_pk)
 
-#유저 정보받기
+#[[[[[유저 정보받기]]]]]
 class UserInfoAPIView(APIView):
     def post(self, request):
         data = request.data.copy()

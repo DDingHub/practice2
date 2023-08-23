@@ -15,6 +15,8 @@ class Contest(models.Model):
     website = models.URLField()
     details = models.TextField()
     isSchool = models.BooleanField(default=False)
+    registration_date = models.DateTimeField(auto_now_add=True, null=True)
+    viewCount = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.title
@@ -26,6 +28,7 @@ class Team(models.Model):
     call = models.CharField(max_length=100,null=True)
     detail = models.TextField(null=True)
     tendency = models.JSONField(default = list)
+    #[[[[[tendency 오류 확인]]]]]
     contest = models.ForeignKey(Contest, on_delete=models.CASCADE)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     dev_capacity = models.PositiveIntegerField(default=0)

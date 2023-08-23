@@ -40,6 +40,7 @@ urlpatterns = [
     #알림보기
     path("notification/<int:userPk>/", views.NotificationListAPIView.as_view(), name="notification"),
 
+    #[[[[[[userInfo필요한지 확인]]]]]]
     #유저정보넣기
     path('userInfo/',views.UserInfoAPIView.as_view(), name='userInfo'),
 ]

@@ -37,7 +37,7 @@ class MyCharacterAPIView(APIView):
         return Response(serialized_characters)
     def post(self, request):
         user = request.user
-        character_id = request.data.get('character_id')
+        character_id = request.data.get('character_id') #이거 typeID로하면 될 듯
 
         if character_id:
             character = get_object_or_404(Character, pk=character_id)
