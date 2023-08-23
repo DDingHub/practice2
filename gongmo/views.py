@@ -568,37 +568,36 @@ class TeamManagementAPIView(APIView):
         else:
             raise PermissionDenied("You don't have permission to view this team.")
 
+# 팀원 삭제
 class TeamMemberDeleteAPIView(APIView):
     # 내 팀에 들어와 있는 사람 내보내기
     def post(self, request):
         userPk = request.user.id
         user = get_object_or_404(User, pk=userPk)
-        team_id = request.data.get("team_id")
-        user_id = request.data.get("user_id")
-
+        team_id = request.data.get("team")
+        user_id = request.data.get("user")
 
         try:
             team = get_object_or_404(Team, id=team_id, created_by=user)
-            member = get_object_or_404(Member, id=user_id, team=team)
+            member = get_object_or_404(Member, user=user_id, team=team)
             member.delete()
             return Response({"message": "멤버가 팀에서 내보내졌습니다."}, status=status.HTTP_200_OK)
         except Team.DoesNotExist:
-            return Response({"error": "해당 팀을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"message": "팀이 존재하지 않거나 권한이 없습니다."}, status=status.HTTP_404_NOT_FOUND)
         except Member.DoesNotExist:
-            return Response({"error": "해당 멤버를 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"message": "멤버가 존재하지 않거나 팀에 속해 있지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            print(team_id)
-            request.data.get("user_id")
-            return Response({"errorasdfaesf": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
+# 지원자 수락 또는 거절
 class TeamAcceptOrRejectAPIView(APIView):
-    def put(self, request):
+    def post(self, request):
         userPk = request.user.id
         user = get_object_or_404(User, pk=userPk)
-        application_id = request.data.get("application_id")
+        applicant_id = request.data.get("applicant_id")
         is_approved = request.data.get("is_approved")
 
-        application = get_object_or_404(Application, id=application_id, team__created_by=user)
+        application = get_object_or_404(Application, applicant_id=applicant_id, team__created_by=user)
 
         if is_approved == "true":
             application.is_approved = True
@@ -629,25 +628,24 @@ class TeamAcceptOrRejectAPIView(APIView):
             application.delete()
             return Response({"message": "신청이 거절되었습니다."}, status=status.HTTP_200_OK)
 
+# 알림
 class NotificationListAPIView(APIView):
-    def get(self, request, userPk):
+    def get(self, request):
+        userPk = request.user.id
         user = get_object_or_404(User, pk=userPk)
         notifications = Notification.objects.filter(user=user).order_by('-created_at')
         serializer = NotificationSerializer(notifications, many=True)
         return Response(serializer.data)
     
-    def post(self, request, userPk):
+    def post(self, request):
+        userPk = request.user.id
         user = get_object_or_404(User, pk=userPk)
         notification_id = request.data.get("notification_id")
-        is_read = request.data.get("is_read")
 
         notification = get_object_or_404(Notification, id=notification_id, user=user)
-        if is_read == "true":
-            notification.is_read = True
-            notification.delete()
-            return Response({"message": "알림이 삭제되었습니다."}, status=status.HTTP_200_OK)
-        else:
-            return Response({"error": "잘못된 요청입니다."}, status=status.HTTP_400_BAD_REQUEST)
+        notification.delete()
+        return Response({"message": "알림이 삭제되었습니다."}, status=status.HTTP_200_OK)
+
 
 # 스크랩 하기 (공모전 북마크하기)
 class ScrapCreateAPIView(APIView):
