@@ -32,11 +32,11 @@ urlpatterns = [
     # 스크랩하기
     path("scrap/", views.ScrapCreateAPIView.as_view(), name="scrapCreate"),
     # 스크랩페이지
-    path("scrap/<int:userPk>/", views.ScrapListAPIView.as_view(), name="scrapList"),
+    # path("scrap/<int:userPk>/", views.ScrapListAPIView.as_view(), name="scrapList"),
     # 찜하기
-    path("jjim/", views.JjimCreateAPIView.as_view(), name="jjimCreate"),
+    path("jjimCreate/", views.JjimCreateAPIView.as_view(), name="jjimCreate"),
     # 찜페이지
-    path("jjim/<int:userPk>/", views.JjimListAPIView.as_view(), name="jjimList"),
+    path("jjim/", views.JjimAPIView.as_view(), name="jjim"),
 
     #알림보기
     path("notification/<int:userPk>/", views.NotificationListAPIView.as_view(), name="notification"),

@@ -14,7 +14,6 @@ from django.utils.html import escape
 from django.utils import timezone
 from django.http import HttpResponseForbidden
 from rest_framework.views import APIView
-from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.parsers import JSONParser
@@ -182,15 +181,14 @@ class ContestDetailAPIView(APIView):
             serialized_team["is_jjim"] = team.id in user_jjim_teams
 
             for member in team.members.all():
-                if member.user.id == team.created_by.id:
-                    member_data = {
-                        "id": member.id,
-                        "jickgoon": member.jickgoon,
-                        "team": member.team.id,
-                        "user": member.user.id,
-                        "crown": True
-                    }
-                    serialized_team[member.jickgoon + "_members"] = [member_data]
+                member_data = {
+                    "id": member.id,
+                    "jickgoon": member.jickgoon,
+                    "team": member.team.id,
+                    "user": member.user.id,
+                    "crown": member.user.id == team.created_by.id
+                }
+                serialized_team[member.jickgoon + "_members"] = [member_data]
 
             team_data.append(serialized_team)
 
@@ -240,8 +238,22 @@ class TeamDetailAPIView(APIView):
         jjim_data=[]
         serialized_team = TeamSerializer(team).data
         serialized_team["is_jjim"] = team.id in user_jjim_teams
-        jjim_data.append(serialized_team)
+        for member in team.members.all():
+            member_data = {
+                "id": member.id,
+                "jickgoon": member.jickgoon,
+                "team": member.team.id,
+                "user": member.user.id,
+                "crown": member.user.id == team.created_by.id
+            }
+            if member.jickgoon == "dev":
+                serialized_team["dev_members"] = [member_data]
+            elif member.jickgoon == "plan":
+                serialized_team["plan_members"] = [member_data]
+            elif member.jickgoon == "design":
+                serialized_team["design_members"] = [member_data]
 
+        jjim_data.append(serialized_team)
         return Response(jjim_data)
 
     #팀 지원하기
@@ -357,7 +369,25 @@ class MyTeamAPIView(APIView):
             team_data = TeamSerializer(team).data
             team_data['applyJickgoon'] = application.jickgoon
             team_data['contest_title'] = team.contest.title
+            for dev_member in team_data['dev_members']:
+                if dev_member['user'] == team_data['created_by']:
+                    dev_member['crown'] = True
+                else:
+                    dev_member['crown'] = False
+                    
+            for plan_member in team_data['plan_members']:
+                if plan_member['user'] == team_data['created_by']:
+                    plan_member['crown'] = True
+                else:
+                    plan_member['crown'] = False
+                    
+            for design_member in team_data['design_members']:
+                if design_member['user'] == team_data['created_by']:
+                    design_member['crown'] = True
+                else:
+                    design_member['crown'] = False
             teams_responseWait_data.append(team_data)
+            
 
         #내가 지원한 팀 - 수락됨
         teams_joined = Team.objects.filter(members__user=userPk)
@@ -368,6 +398,23 @@ class MyTeamAPIView(APIView):
             contest_id = team['contest']
             contest = Contest.objects.get(id=contest_id)
             team['contest_title'] = contest.title
+            for dev_member in team['dev_members']:
+                if dev_member['user'] == team['created_by']:
+                    dev_member['crown'] = True
+                else:
+                    dev_member['crown'] = False
+                    
+            for plan_member in team['plan_members']:
+                if plan_member['user'] == team['created_by']:
+                    plan_member['crown'] = True
+                else:
+                    plan_member['crown'] = False
+                    
+            for design_member in team['design_members']:
+                if design_member['user'] == team['created_by']:
+                    design_member['crown'] = True
+                else:
+                    design_member['crown'] = False
 
         #내가 지원한 팀 - 거절됨
         teams_rejected = RejectedTeam.objects.filter(user=userPk)
@@ -379,7 +426,23 @@ class MyTeamAPIView(APIView):
             contest_id = team['contest']
             contest = Contest.objects.get(id=contest_id)
             team['contest_title'] = contest.title
-
+            for dev_member in team['dev_members']:
+                if dev_member['user'] == team['created_by']:
+                    dev_member['crown'] = True
+                else:
+                    dev_member['crown'] = False
+                    
+            for plan_member in team['plan_members']:
+                if plan_member['user'] == team['created_by']:
+                    plan_member['crown'] = True
+                else:
+                    plan_member['crown'] = False
+                    
+            for design_member in team['design_members']:
+                if design_member['user'] == team['created_by']:
+                    design_member['crown'] = True
+                else:
+                    design_member['crown'] = False
 
         #내가 만든 팀
         teams_created = Team.objects.filter(created_by=userPk)
@@ -399,7 +462,24 @@ class MyTeamAPIView(APIView):
             else:
                 team['isfull'] = False
 
-        for team in teams_created_data:
+            for dev_member in team['dev_members']:
+                if dev_member['user'] == team['created_by']:
+                    dev_member['crown'] = True
+                else:
+                    dev_member['crown'] = False
+                    
+            for plan_member in team['plan_members']:
+                if plan_member['user'] == team['created_by']:
+                    plan_member['crown'] = True
+                else:
+                    plan_member['crown'] = False
+                    
+            for design_member in team['design_members']:
+                if design_member['user'] == team['created_by']:
+                    design_member['crown'] = True
+                else:
+                    design_member['crown'] = False
+
             contest_id = team['contest']
             contest = Contest.objects.get(id=contest_id)
             team['contest_title'] = contest.title
@@ -568,12 +648,12 @@ class ScrapCreateAPIView(APIView):
             return Response({'message': scrap_data}, status=status.HTTP_201_CREATED)
         
 #스크랩목록보기
-class ScrapListAPIView(ListAPIView):
-    serializer_class = ScrapSerializer
+# class ScrapAPIView(APIView):
+#     serializer_class = ScrapSerializer
 
-    def get_queryset(self):
-        user_pk = self.kwargs["userPk"]
-        return Scrap.objects.filter(user__pk=user_pk)
+#     def get_queryset(self):
+#         user_pk = self.kwargs["userPk"]
+#         return Scrap.objects.filter(user__pk=user_pk)
 
 # 찜하기 (팀 찜하기)
 class JjimCreateAPIView(APIView):
@@ -596,12 +676,21 @@ class JjimCreateAPIView(APIView):
             return Response({'message': jjim_data}, status=status.HTTP_201_CREATED)
 
 #찜 목록보기
-class JjimListAPIView(ListAPIView):
-    serializer_class = JjimSerializer
+class JjimAPIView(APIView):
+    def get(self, request):
+        user = request.user
+        jjims = Jjim.objects.filter(user=user).select_related('team')  # Jjim 객체에 연결된 Team 객체 함께 로드
 
-    def get_queryset(self):
-        user_pk = self.kwargs["userPk"]
-        return Jjim.objects.filter(user__pk=user_pk)
+        response_data = []
+        for jjim in jjims:
+            jjim_data = JjimSerializer(jjim).data
+            team_data = TeamSerializer(jjim.team).data
+            contest_title = jjim.team.contest.title
+            jjim_data['team'] = team_data
+            team_data['contest_title'] = contest_title
+            response_data.append(jjim_data)
+
+        return Response(response_data, status=status.HTTP_200_OK)
 
 #[[[[[유저 정보받기 필요?]]]]]
 class UserInfoAPIView(APIView):

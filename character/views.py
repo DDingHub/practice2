@@ -11,11 +11,10 @@ from rest_framework import status
 class CharacterAPIView(APIView):
     def post(self, request):
         type_id = request.data.get('typeID')
-        user_id = request.user.id
+        user_id = 1
+        # user_id = request.user.id
         user = User.objects.filter(id=user_id).first()
         user_name = user.username
-        #[[[[[[안되면 request.data.get('userID) 형식으로 해보기]]]]]]
-        print(type_id)
         characters = Character.objects.filter(id=type_id)
         serializer = CharacterSerializer(characters, many=True)
 
@@ -27,6 +26,7 @@ class CharacterAPIView(APIView):
             'character' : serializer.data,
             'user' : user_data
         }
+        print(response_data)
         return Response(response_data, status=status.HTTP_201_CREATED)
 
     # [유형추가]
