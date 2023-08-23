@@ -314,13 +314,16 @@ class LogoutAPIView(APIView):
 
 #My팀 보기(지원한 팀, 만든 팀)
 class MyTeamAPIView(APIView):
-    def get(self, reqeust, userPk):
-        teams_created = Team.objects.filter(created_by=userPk)
+    def get(self, request):
+        userPk = request.user.id
         teams_joined = Team.objects.filter(members__user=userPk)
-        teams_created_data = [{'team_id': team.id} for team in teams_created]
-        teams_joined_data = [{'team_id': team.id} for team in teams_joined]
+        teams_created = Team.objects.filter(created_by=userPk)
+        
+        teams_joined_serializer = TeamSerializer(teams_joined, many=True)
+        teams_created_serializer = TeamSerializer(teams_created, many=True)
 
-        return Response({"my_teams_created": teams_created_data, "my_teams_joined": teams_joined_data}, status=status.HTTP_200_OK)
+        return Response({"내가 지원한 팀": teams_joined_serializer.data, "내가 만든 팀 ": teams_created_serializer.data}, status=status.HTTP_200_OK)
+
 
 # 팀장 : 지원자, 팀원 관리
 class TeamManagementAPIView(APIView):
