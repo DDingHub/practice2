@@ -176,13 +176,25 @@ class ContestDetailAPIView(APIView):
         contest_data.append(serialized_contest)
 
         user_jjim_teams = Jjim.objects.filter(user=user).values_list('team_id', flat=True)
-        jjim_data=[]
+        team_data = []
         for team in teams:
             serialized_team = TeamSerializer(team).data
             serialized_team["is_jjim"] = team.id in user_jjim_teams
-            jjim_data.append(serialized_team)
 
-        return Response({'contest': contest_data, 'teams': jjim_data})
+            for member in team.members.all():
+                if member.user.id == team.created_by.id:
+                    member_data = {
+                        "id": member.id,
+                        "jickgoon": member.jickgoon,
+                        "team": member.team.id,
+                        "user": member.user.id,
+                        "crown": True
+                    }
+                    serialized_team[member.jickgoon + "_members"] = [member_data]
+                    
+            team_data.append(serialized_team)
+
+        return Response({'contest': contest_data, 'teams': team_data})
     #팀 생성하기
     def post(self, request, contestPk):
         contest = get_object_or_404(Contest, pk=contestPk)
@@ -381,7 +393,7 @@ class MyTeamAPIView(APIView):
             plan_joined = team.get('plan', 0)
             design_joined = team.get('design', 0)
             team['applicant_count'] = Application.objects.filter(team=team['id'], is_approved=False).count()
-            team['member_count'] = dev_joined + plan_joined + design_joined - 1
+            team['member_count'] = dev_joined + plan_joined + design_joined 
             if dev_capacity == dev_joined and plan_capacity == plan_joined and design_capacity == design_joined:
                 team['isfull'] = True
             else:
