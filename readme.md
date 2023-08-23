@@ -28,7 +28,7 @@ pip install requests
 # 팀생성 /contest_id
 
 {"name":"팀","teamname":"1","call":"1","detail":"1",
-"dev_capacity": 1,"plan_capacity": 1,"design_capacity": 1}
+"dev_capacity": 1,"plan_capacity": 1,"design_capacity": 1,"leaderJickgoon":"dev"}
 
 # 팀 가입 /contest_id/team_id
 

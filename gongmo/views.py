@@ -146,7 +146,6 @@ class DDingContestListAPIView(APIView):
             return Response(dding_contest_form.cleaned_data, status=status.HTTP_201_CREATED)
         return Response(dding_contest_form.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
 #공모전 세부페이지
 class ContestDetailAPIView(APIView):
     #공모전 정보와 팀 정보 가져오기
@@ -165,11 +164,11 @@ class ContestDetailAPIView(APIView):
             leaderJickgoon = request.data.get('leaderJickgoon')
             team = team_form.save(commit=False)
             team.contest = contest
-            team.created_by = request.user.id
+            team.created_by = request.user
             #[[[[[tendency수정필요]]]]]
             team.save()
 
-            Member.objects.create(team=team, user=request.user.id, jickgoon=leaderJickgoon)    
+            Member.objects.create(team=team, user=request.user, jickgoon=leaderJickgoon)    
 
             if leaderJickgoon == 'dev':
               team.dev += 1
@@ -317,13 +316,26 @@ class MyTeamAPIView(APIView):
     def get(self, request):
         userPk = request.user.id
         teams_joined = Team.objects.filter(members__user=userPk)
+        teams_accepted = teams_joined.exclude(created_by=userPk)
+
+        applications = Application.objects.filter(applicant=userPk, is_approved=False)
+        applied_team_ids = applications.values_list('team', flat=True)
+        teams_applied = Team.objects.filter(id__in=applied_team_ids)
+
         teams_created = Team.objects.filter(created_by=userPk)
         
-        teams_joined_serializer = TeamSerializer(teams_joined, many=True)
+        teams_accepted_serializer = TeamSerializer(teams_accepted, many=True)
+        
+        teams_applied_data = []
+        for team in teams_applied:
+            application = applications.get(team=team)
+            team_data = TeamSerializer(team).data
+            team_data['applyJickgoon'] = application.jickgoon
+            teams_applied_data.append(team_data)
+        
         teams_created_serializer = TeamSerializer(teams_created, many=True)
 
-        return Response({"내가 지원한 팀": teams_joined_serializer.data, "내가 만든 팀 ": teams_created_serializer.data}, status=status.HTTP_200_OK)
-
+        return Response({"accepted": teams_accepted_serializer.data, "responseWait": teams_applied_data, "created": teams_created_serializer.data}, status=status.HTTP_200_OK)
 
 # 팀장 : 지원자, 팀원 관리
 class TeamManagementAPIView(APIView):
@@ -422,7 +434,6 @@ class TeamManagementAPIView(APIView):
             request.data.get("user_id")
             return Response({"errorasdfaesf": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
 class NotificationListAPIView(APIView):
     def get(self, request, userPk):
         user = get_object_or_404(User, pk=userPk)
@@ -471,7 +482,6 @@ class ScrapListAPIView(ListAPIView):
         user_pk = self.kwargs["userPk"]
         return Scrap.objects.filter(user__pk=user_pk)
 
-
 # 찜하기 (팀 찜하기)
 class JjimCreateAPIView(APIView):
     def post(self,request):
@@ -500,7 +510,7 @@ class JjimListAPIView(ListAPIView):
         user_pk = self.kwargs["userPk"]
         return Jjim.objects.filter(user__pk=user_pk)
 
-#[[[[[유저 정보받기]]]]]
+#[[[[[유저 정보받기 필요?]]]]]
 class UserInfoAPIView(APIView):
     def post(self, request):
         data = request.data.copy()
