@@ -11,10 +11,23 @@ from rest_framework import status
 class CharacterAPIView(APIView):
     def post(self, request):
         type_id = request.data.get('typeID')
+        user_id = request.user.id
+        user = User.objects.filter(id=user_id).first()
+        user_name = user.username
+        #[[[[[[안되면 request.data.get('userID) 형식으로 해보기]]]]]]
         print(type_id)
         characters = Character.objects.filter(id=type_id)
         serializer = CharacterSerializer(characters, many=True)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        user_data = {
+            'user_name' : user_name
+        }
+
+        response_data = {
+            'character' : serializer.data,
+            'user' : user_data
+        }
+        return Response(response_data, status=status.HTTP_201_CREATED)
 
     # [유형추가]
     # def post(self,request):
@@ -26,15 +39,15 @@ class CharacterAPIView(APIView):
     
 #유형테스트 결과 유저한테 보내줌
 class MyCharacterAPIView(APIView):
-    def get(self, request):
-        user = request.user
-        my_characters = MyCharacter.objects.filter(user=user)
-        serialized_characters = []
+    # def get(self, request):
+    #     user = request.user.id
+    #     my_characters = MyCharacter.objects.filter(user=user)
+    #     serialized_characters = []
 
-        for my_character in my_characters:
-            serialized_characters.append(CharacterSerializer(my_character.character).data)
+    #     for my_character in my_characters:
+    #         serialized_characters.append(CharacterSerializer(my_character.character).data)
 
-        return Response(serialized_characters)
+    #     return Response(serialized_characters)
     def post(self, request):
         user = request.user
         character_id = request.data.get('character_id') #이거 typeID로하면 될 듯
