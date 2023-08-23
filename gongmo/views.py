@@ -315,27 +315,60 @@ class LogoutAPIView(APIView):
 class MyTeamAPIView(APIView):
     def get(self, request):
         userPk = request.user.id
-        teams_joined = Team.objects.filter(members__user=userPk)
-        teams_accepted = teams_joined.exclude(created_by=userPk)
 
+        #내가 지원한 팀 - 응답 대기
         applications = Application.objects.filter(applicant=userPk, is_approved=False)
         applied_team_ids = applications.values_list('team', flat=True)
         teams_applied = Team.objects.filter(id__in=applied_team_ids)
-
-        teams_created = Team.objects.filter(created_by=userPk)
-        
-        teams_accepted_serializer = TeamSerializer(teams_accepted, many=True)
-        
         teams_applied_data = []
         for team in teams_applied:
             application = applications.get(team=team)
             team_data = TeamSerializer(team).data
             team_data['applyJickgoon'] = application.jickgoon
+            team_data['contest_title'] = team.contest.title
             teams_applied_data.append(team_data)
-        
-        teams_created_serializer = TeamSerializer(teams_created, many=True)
 
-        return Response({"accepted": teams_accepted_serializer.data, "responseWait": teams_applied_data, "created": teams_created_serializer.data}, status=status.HTTP_200_OK)
+        #내가 지원한 팀 - 수락됨
+        teams_joined = Team.objects.filter(members__user=userPk)
+        teams_accepted = teams_joined.exclude(created_by=userPk)
+        teams_accepted_serializer = TeamSerializer(teams_accepted, many=True)
+        teams_accepted_data = teams_accepted_serializer.data
+        for team in teams_accepted_data:
+            contest_id = team['contest']
+            contest = Contest.objects.get(id=contest_id)
+            team['contest_title'] = contest.title
+
+        #내가 지원한 팀 - 거절됨
+        teams_rejected = RejectedTeam.objects.filter(user=userPk)
+        rejected_team_ids = teams_rejected.values_list('team', flat=True)
+        teams_rejected_info = Team.objects.filter(id__in=rejected_team_ids)
+        teams_rejected_serializer = TeamSerializer(teams_rejected_info, many=True)
+        teams_rejected_data = teams_rejected_serializer.data
+        for team in teams_rejected_data:
+            contest_id = team['contest']
+            contest = Contest.objects.get(id=contest_id)
+            team['contest_title'] = contest.title
+
+
+        #내가 만든 팀
+        teams_created = Team.objects.filter(created_by=userPk)
+        teams_created_serializer = TeamSerializer(teams_created, many=True)
+        teams_created_data = teams_created_serializer.data
+        for team in teams_created_data:
+            contest_id = team['contest']
+            contest = Contest.objects.get(id=contest_id)
+            team['contest_title'] = contest.title
+
+        applied = {
+            "responseWait": teams_applied_data,
+            "accepted": teams_accepted_data,
+            "rejected": teams_rejected_data,
+        }
+
+        return Response({
+            "applied": applied,
+            "created": teams_created_data
+            }, status=status.HTTP_200_OK)
 
 # 팀장 : 지원자, 팀원 관리
 class TeamManagementAPIView(APIView):
@@ -385,7 +418,7 @@ class TeamManagementAPIView(APIView):
 
         application = get_object_or_404(Application, id=application_id, team__created_by=user)
 
-        if is_approved:
+        if is_approved == "true":
             application.is_approved = True
             application.save()
             applicant = application.applicant
@@ -410,6 +443,7 @@ class TeamManagementAPIView(APIView):
             team = application.team
             notification_message = f"{team.name} 팀에서 팀 요청을 거절했어요"
             Notification.objects.create(user=applicant, message=notification_message)
+            RejectedTeam.objects.create(user=applicant,team=team)
             application.delete()
             return Response({"message": "신청이 거절되었습니다."}, status=status.HTTP_200_OK)
 

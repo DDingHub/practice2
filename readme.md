@@ -3,22 +3,22 @@ pip install requests
 # 회원가입 /signup
 
 {
-"username": "이항목입니다",
-"password": "응",
+"username": "a",
+"password": "a",
 "job":["응"],
 "hobby":["응응"],
 "dream":["응응응"],
 "tendency_worktime":"응응응",
-"tendency_personality": ["이 필드는 필수 항목입니다."],
-"tendency_MBTI": "이 필",
+"tendency_personality": ["응"],
+"tendency_MBTI": "응",
 "email":"a@gmail.com"
 }
 
 # 로그인 /login
 
 {
-"username": "이항목입니다",
-"password": "응"
+"username": "a",
+"password": "a"
 }
 
 # 로그아웃 /logout
