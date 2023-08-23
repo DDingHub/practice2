@@ -318,15 +318,15 @@ class MyTeamAPIView(APIView):
 
         #내가 지원한 팀 - 응답 대기
         applications = Application.objects.filter(applicant=userPk, is_approved=False)
-        applied_team_ids = applications.values_list('team', flat=True)
-        teams_applied = Team.objects.filter(id__in=applied_team_ids)
-        teams_applied_data = []
-        for team in teams_applied:
+        responseWait_team_ids = applications.values_list('team', flat=True)
+        teams_responseWait = Team.objects.filter(id__in=responseWait_team_ids)
+        teams_responseWait_data = []
+        for team in teams_responseWait:
             application = applications.get(team=team)
             team_data = TeamSerializer(team).data
             team_data['applyJickgoon'] = application.jickgoon
             team_data['contest_title'] = team.contest.title
-            teams_applied_data.append(team_data)
+            teams_responseWait_data.append(team_data)
 
         #내가 지원한 팀 - 수락됨
         teams_joined = Team.objects.filter(members__user=userPk)
@@ -359,15 +359,29 @@ class MyTeamAPIView(APIView):
             contest = Contest.objects.get(id=contest_id)
             team['contest_title'] = contest.title
 
+        responseWait_team_count = len(teams_responseWait_data)
+        accepted_team_count = len(teams_accepted_data)
+        rejected_team_count = len(teams_rejected_data)
+
+        applied_count = (responseWait_team_count + accepted_team_count + rejected_team_count)
+        created_team_count = len(teams_created_data)
+
         applied = {
-            "responseWait": teams_applied_data,
-            "accepted": teams_accepted_data,
-            "rejected": teams_rejected_data,
+            "responseWaitTeam": teams_responseWait_data,
+            "acceptedTeam": teams_accepted_data,
+            "rejectedTeam": teams_rejected_data,
+            "team_count" : applied_count
         }
+
+        created = {
+            "createdTeam" : teams_created_data,
+            "team_count" : created_team_count
+        }
+
 
         return Response({
             "applied": applied,
-            "created": teams_created_data
+            "created": created
             }, status=status.HTTP_200_OK)
 
 # 팀장 : 지원자, 팀원 관리
