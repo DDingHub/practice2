@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-#유형테스트 목록, 유형테스트 등록(db삭제될까봐 만듦)
+#유형테스트 결과페이지
 class CharacterAPIView(APIView):
     def post(self, request):
         type_id = request.data.get('typeID')
@@ -37,30 +37,21 @@ class CharacterAPIView(APIView):
     #         return Response(character_form.cleaned_data, status=status.HTTP_201_CREATED)
     #     return Response(character_form.errors, status=status.HTTP_400_BAD_REQUEST)
     
-#유형테스트 결과 유저한테 보내줌
+
+#유형테스트 - [대표 유형으로 설정하기]
 class MyCharacterAPIView(APIView):
-    # def get(self, request):
-    #     user = request.user.id
-    #     my_characters = MyCharacter.objects.filter(user=user)
-    #     serialized_characters = []
-
-    #     for my_character in my_characters:
-    #         serialized_characters.append(CharacterSerializer(my_character.character).data)
-
-    #     return Response(serialized_characters)
     def post(self, request):
-        user = request.user
-        character_id = request.data.get('character_id') #이거 typeID로하면 될 듯
+        type_id = request.data.get('typeID')
+        user_id = request.user.id
 
-        if character_id:
-            character = get_object_or_404(Character, pk=character_id)
-            defaults = {"user": user, "character": character}
-            MyCharacter.objects.filter(user=user).delete()
-            my_character, created = MyCharacter.objects.update_or_create(user=user, character=character, defaults=defaults)
+        existing_data = MyCharacter.objects.filter(user_id=user_id, character_id=type_id).first()
 
-            if created:
-              return Response({"message": "Character assigned successfully."}, status=status.HTTP_201_CREATED)
-            else:
-                return Response({"message": "Character assignment updated."}, status=status.HTTP_200_OK)
+        if existing_data:
+            existing_data.delete()  
+            response_message = "유형테스트 결과가 업데이트 되었습니다."
         else:
-            return Response({"message": "character_id is required."}, status=status.HTTP_400_BAD_REQUEST)
+            my_character = MyCharacter(user_id=user_id, character_id=type_id)
+            my_character.save()
+            response_message = "유형테스트 결과가 저장되었습니다."
+
+        return Response({"message": response_message}, status=status.HTTP_200_OK)
