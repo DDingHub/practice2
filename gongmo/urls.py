@@ -30,9 +30,9 @@ urlpatterns = [
     path("teamManagement/<int:userPk>/", views.TeamManagementAPIView.as_view(), name="teamManagement"),
 
     # 스크랩하기
-    path("scrap/", views.ScrapCreateAPIView.as_view(), name="scrapCreate"),
+    path("scrapCreate/", views.ScrapCreateAPIView.as_view(), name="scrapCreate"),
     # 스크랩페이지
-    # path("scrap/<int:userPk>/", views.ScrapListAPIView.as_view(), name="scrapList"),
+    path("scrap/", views.ScrapAPIView.as_view(), name="scrap"),
     # 찜하기
     path("jjimCreate/", views.JjimCreateAPIView.as_view(), name="jjimCreate"),
     # 찜페이지

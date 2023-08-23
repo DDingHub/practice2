@@ -648,12 +648,26 @@ class ScrapCreateAPIView(APIView):
             return Response({'message': scrap_data}, status=status.HTTP_201_CREATED)
         
 #스크랩목록보기
-# class ScrapAPIView(APIView):
-#     serializer_class = ScrapSerializer
+class ScrapAPIView(APIView):
+    def get(self, request):
+        user = request.user
+        scraps = Scrap.objects.filter(user=user).select_related('contest')  # Scrap 객체에 연결된 Contest 객체 함께 로드
 
-#     def get_queryset(self):
-#         user_pk = self.kwargs["userPk"]
-#         return Scrap.objects.filter(user__pk=user_pk)
+        response_data = []
+        for scrap in scraps:
+            scrap_data = ScrapSerializer(scrap).data
+            contest_data = ContestSerializer(scrap.contest).data
+            scrap_data['contest'] = contest_data
+            response_data.append(scrap_data)
+
+        total_scraps = len(scraps)  # 스크랩한 대회의 수 계산
+
+        response = {
+            'total_scraps': total_scraps,
+            'scrap_list': response_data
+        }
+
+        return Response(response, status=status.HTTP_200_OK)
 
 # 찜하기 (팀 찜하기)
 class JjimCreateAPIView(APIView):
@@ -690,7 +704,14 @@ class JjimAPIView(APIView):
             team_data['contest_title'] = contest_title
             response_data.append(jjim_data)
 
-        return Response(response_data, status=status.HTTP_200_OK)
+        total_teams = len(jjims)
+
+        response = {
+            'total_teams': total_teams,
+            'jjim_list': response_data
+        }
+
+        return Response(response, status=status.HTTP_200_OK)
 
 #[[[[[유저 정보받기 필요?]]]]]
 class UserInfoAPIView(APIView):
