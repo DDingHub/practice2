@@ -17,6 +17,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.parsers import JSONParser
+from rest_framework.exceptions import PermissionDenied
 from django.core.exceptions import ObjectDoesNotExist
 from datetime import datetime,timedelta
 from mypage.models import UserProfile
@@ -152,19 +153,18 @@ class DDingContestListAPIView(APIView):
         serializer = ContestSerializer(dding_contests, many=True)
         return Response(serializer.data)
 
-    def post(self,request):
-        dding_contest_form = DDingContestForm(request.data)
-        if dding_contest_form.is_valid():
-            dding_contest_form.save()
-            return Response(dding_contest_form.cleaned_data, status=status.HTTP_201_CREATED)
-        return Response(dding_contest_form.errors, status=status.HTTP_400_BAD_REQUEST)
+    # def post(self,request):
+    #     dding_contest_form = DDingContestForm(request.data)
+    #     if dding_contest_form.is_valid():
+    #         dding_contest_form.save()
+    #         return Response(dding_contest_form.cleaned_data, status=status.HTTP_201_CREATED)
+    #     return Response(dding_contest_form.errors, status=status.HTTP_400_BAD_REQUEST)
 
 #공모전 세부페이지
 class ContestDetailAPIView(APIView):
     #공모전 정보와 팀 정보 가져오기
     def get(self, request, contestPk):
         user = request.user.id
-
         contest = get_object_or_404(Contest, pk=contestPk)
         teams = Team.objects.filter(contest=contest)
 
@@ -253,6 +253,7 @@ class TeamDetailAPIView(APIView):
             elif member.jickgoon == "design":
                 serialized_team["design_members"] = [member_data]
 
+        serialized_team["member_count"] = team.members.count() 
         jjim_data.append(serialized_team)
         return Response(jjim_data)
 
@@ -369,6 +370,10 @@ class MyTeamAPIView(APIView):
             team_data = TeamSerializer(team).data
             team_data['applyJickgoon'] = application.jickgoon
             team_data['contest_title'] = team.contest.title
+
+            jjim_exists = Jjim.objects.filter(user=request.user, team=team).exists()
+            team_data['is_jjim'] = jjim_exists
+
             for dev_member in team_data['dev_members']:
                 if dev_member['user'] == team_data['created_by']:
                     dev_member['crown'] = True
@@ -415,6 +420,9 @@ class MyTeamAPIView(APIView):
                     design_member['crown'] = True
                 else:
                     design_member['crown'] = False
+            
+            jjim_exists = Jjim.objects.filter(user=request.user, team_id=team['id']).exists()
+            team['is_jjim'] = jjim_exists
 
         #내가 지원한 팀 - 거절됨
         teams_rejected = RejectedTeam.objects.filter(user=userPk)
@@ -444,6 +452,9 @@ class MyTeamAPIView(APIView):
                 else:
                     design_member['crown'] = False
 
+            jjim_exists = Jjim.objects.filter(user=request.user, team_id=team['id']).exists()
+            team['is_jjim'] = jjim_exists
+
         #내가 만든 팀
         teams_created = Team.objects.filter(created_by=userPk)
         teams_created_serializer = TeamSerializer(teams_created, many=True)
@@ -470,6 +481,7 @@ class MyTeamAPIView(APIView):
                     
             for plan_member in team['plan_members']:
                 if plan_member['user'] == team['created_by']:
+
                     plan_member['crown'] = True
                 else:
                     plan_member['crown'] = False
@@ -509,48 +521,79 @@ class MyTeamAPIView(APIView):
             "created": created
             }, status=status.HTTP_200_OK)
 
-# 팀장 : 지원자, 팀원 관리
+# 팀 - 지원자, 팀원 가져오기
 class TeamManagementAPIView(APIView):
     # 내 팀에 신청한 사람 가져오기
-    def get(self, request, userPk):
+    def post(self, request):
+        userPk = request.user.id
         user = get_object_or_404(User, pk=userPk)
-        teams_created_by_user = Team.objects.filter(created_by=user)
 
-        # 나의 팀들에 대한 신청 정보 가져오기
-        applications = Application.objects.filter(team__in=teams_created_by_user)
-        application_data = []
+        team_id = request.data.get('team')
+        team = get_object_or_404(Team, pk=team_id)
+
+        if team.created_by == user:
+            team_info = {
+                'id': team.id,
+                'teamname': team.teamname
+            }
+
+            responseWait = Application.objects.filter(team=team, is_approved=False)
+            responseWait_data = []
+            for wait in responseWait:
+                wait_data = {
+                    'user_id': wait.applicant.id,
+                    'username': wait.applicant.username,
+                    'jickgoon': wait.jickgoon
+                }
+                responseWait_data.append(wait_data)
+
+            members_data = []
+            for member in team.members.exclude(user=team.created_by):
+                member_data = {
+                    'user_id': member.user.id,
+                    'username': member.user.username,
+                    'jickgoon': member.jickgoon
+                }
+                members_data.append(member_data)
+
+            response_data = {
+                'team_info': team_info,
+                'responseWait': responseWait_data,
+                'accepted' : members_data,
+                'total_responseWait': len(responseWait_data),
+                'total_accepted' : len(members_data),
+                'total_count' : len(members_data) + len(responseWait_data)
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+        else:
+            raise PermissionDenied("You don't have permission to view this team.")
+
+class TeamMemberDeleteAPIView(APIView):
+    # 내 팀에 들어와 있는 사람 내보내기
+    def post(self, request):
+        userPk = request.user.id
+        user = get_object_or_404(User, pk=userPk)
+        team_id = request.data.get("team_id")
+        user_id = request.data.get("user_id")
+
+
+        try:
+            team = get_object_or_404(Team, id=team_id, created_by=user)
+            member = get_object_or_404(Member, id=user_id, team=team)
+            member.delete()
+            return Response({"message": "멤버가 팀에서 내보내졌습니다."}, status=status.HTTP_200_OK)
+        except Team.DoesNotExist:
+            return Response({"error": "해당 팀을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+        except Member.DoesNotExist:
+            return Response({"error": "해당 멤버를 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            print(team_id)
+            request.data.get("user_id")
+            return Response({"errorasdfaesf": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-        # 나의 팀들에 대한 멤버 정보 가져오기
-        member_data = []
-
-        for team in teams_created_by_user:
-            members = Member.objects.filter(team=team)
-            for member in members:
-                member_data.append({
-                    "team_id": team.id,
-                    "user_id": member.user.id,
-                    "jickgoon_type": member.jickgoon
-                })
-            
-            applications_for_team = applications.filter(team=team)
-            for application in applications_for_team:
-                application_data.append({
-                    "id": application.id,
-                    "team": application.team.id,
-                    "applicant": application.applicant.id,
-                    "jickgoon": application.jickgoon,
-                    "is_approved": application.is_approved
-                })
-
-        response_data = {
-            "applications": application_data,
-            "members": member_data
-        }
-
-        return Response(response_data, status=status.HTTP_200_OK)
-
-    # 내 팀에 신청한 사람의 신청 승인 또는 거절
-    def put(self, request, userPk):
+class TeamAcceptOrRejectAPIView(APIView):
+    def put(self, request):
+        userPk = request.user.id
         user = get_object_or_404(User, pk=userPk)
         application_id = request.data.get("application_id")
         is_approved = request.data.get("is_approved")
@@ -586,27 +629,6 @@ class TeamManagementAPIView(APIView):
             application.delete()
             return Response({"message": "신청이 거절되었습니다."}, status=status.HTTP_200_OK)
 
-    # 내 팀에 들어와 있는 사람 내보내기
-    def post(self, request, userPk):
-        user = get_object_or_404(User, pk=userPk)
-        team_id = request.data.get("team_id")
-        user_id = request.data.get("user_id")
-
-
-        try:
-            team = get_object_or_404(Team, id=team_id, created_by=user)
-            member = get_object_or_404(Member, id=user_id, team=team)
-            member.delete()
-            return Response({"message": "멤버가 팀에서 내보내졌습니다."}, status=status.HTTP_200_OK)
-        except Team.DoesNotExist:
-            return Response({"error": "해당 팀을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
-        except Member.DoesNotExist:
-            return Response({"error": "해당 멤버를 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
-        except Exception as e:
-            print(team_id)
-            request.data.get("user_id")
-            return Response({"errorasdfaesf": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 class NotificationListAPIView(APIView):
     def get(self, request, userPk):
         user = get_object_or_404(User, pk=userPk)
@@ -631,7 +653,7 @@ class NotificationListAPIView(APIView):
 class ScrapCreateAPIView(APIView):
     def post(self,request):
         contest_id = request.data.get("contest")
-        user =request.user.id
+        user =request.user
 
         try:
             scrap = Scrap.objects.get(user=user, contest_id=contest_id)
@@ -657,6 +679,7 @@ class ScrapAPIView(APIView):
         for scrap in scraps:
             scrap_data = ScrapSerializer(scrap).data
             contest_data = ContestSerializer(scrap.contest).data
+            contest_data['is_scrapped'] = True
             scrap_data['contest'] = contest_data
             response_data.append(scrap_data)
 
@@ -702,6 +725,28 @@ class JjimAPIView(APIView):
             contest_title = jjim.team.contest.title
             jjim_data['team'] = team_data
             team_data['contest_title'] = contest_title
+
+            jjim_exists = Jjim.objects.filter(user=user, team=jjim.team).exists()
+            team_data['is_jjim'] = jjim_exists
+
+            for dev_member in team_data['dev_members']:
+                if dev_member['user'] == team_data['created_by']:
+                    dev_member['crown'] = True
+                else:
+                    dev_member['crown'] = False
+
+            for plan_member in team_data['plan_members']:
+                if plan_member['user'] == team_data['created_by']:
+                    plan_member['crown'] = True
+                else:
+                    plan_member['crown'] = False
+
+            for design_member in team_data['design_members']:
+                if design_member['user'] == team_data['created_by']:
+                    design_member['crown'] = True
+                else:
+                    design_member['crown'] = False
+
             response_data.append(jjim_data)
 
         total_teams = len(jjims)
@@ -724,3 +769,16 @@ class UserInfoAPIView(APIView):
             serializer.save(user=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+#팀 생성페이지에서 생성자정보 보여주기
+class TeamCreatePageAPIView(APIView):
+    def get(self, request):
+        user = request.user
+        try:
+            profile = UserProfile.objects.get(user=user)
+        except UserProfile.DoesNotExist:
+            return Response({"error": "UserProfile not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = UserProfileSerializer(profile)  # 시리얼라이저를 사용하여 데이터를 직렬화합니다
+
+        return Response(serializer.data)

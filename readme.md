@@ -3,15 +3,16 @@ pip install requests
 # 회원가입 /signup
 
 {
-"username": "a",
-"password": "a",
+"username": "e",
+"password": "e",
 "job":["응"],
 "hobby":["응응"],
 "dream":["응응응"],
 "tendency_worktime":"응응응",
 "tendency_personality": ["응"],
 "tendency_MBTI": "응",
-"email":"a@gmail.com"
+"email":"e@mju.ac.kr",
+"major":"데이터테크놀로지"
 }
 
 # 로그인 /login
@@ -42,26 +43,103 @@ pip install requests
 
 {"team_id":1,"user_id":2}
 
-# 교내 공모전 생성
+# 교내 공모전 모음
 
 {
-"title": "",
-"photo": "",
-"field": "",
-"eligibility": "",
-"organizer": "",
-"sponsorship": "",
-"application_period": "",
-"prize_total": "3",
-"prize_first": "",
-"website": "",
-"details": "",
-"isSchool":"true" #false로 할 시 교외 공모전으로 생성 됨
+"title": "MJU 기업분석 경진대회",
+"photo": "img/교내2.jpg",
+"field": "취업,분석",
+"eligibility": "재학생",
+"organizer": "용인지역대학일자리협회",
+"sponsorship": "자연진로취업지원팀,대학혁신지원사업",
+"application_period": "2023-06-21 ~ 2023-08-07D+17",
+"prize_total": ".",
+"prize_first": ".",
+"website": "https://www.mju.ac.kr/bbs/mjukr/146/200413/artclView.do",
+"details": ".",
+"isSchool": true,
+"viewCount": 0
 }
 
-# userInfo/ -> 회원가입때 정보 받기 위한 곳
+{
+"title": "창의적 SW프로그램 경진대회",
+"photo": "img/경진대회표지.jpg",
+"field": "IT/기획/디자인/개발",
+"eligibility": "ICT소속 재학생",
+"organizer": "ict융합대학",
+"sponsorship": ".",
+"application_period": "2023-06-07 ~ 2023-06-16D+69",
+"prize_total": "100만원",
+"prize_first": "100만원",
+"website": "https://www.mju.ac.kr/bbs/mjukr/146/200413/artclView.do",
+"details": ".",
+"isSchool": true,
+"viewCount": 0
+}
 
-# mypage/ -> 팀 만들었을 때!
+{
+"title": "명지대학교 YOUTUBE 영상 공모전",
+"photo": "img/교내3.jpg",
+"field": ".",
+"eligibility": ".",
+"organizer": "대외협력 홍보팀",
+"sponsorship": ".",
+"application_period": "2023-07-10 ~ 2023-08-31D-7",
+"prize_total": ".",
+"prize_first": ".",
+"website": "https://www.mju.ac.kr/bbs/mjukr/146/200413/artclView.do",
+"details": ".",
+"isSchool": true,
+"viewCount": 0
+}
+
+{
+"title": "나만의 학UP비법",
+"photo": "img/교내4.jpg",
+"field": ".",
+"eligibility": ".",
+"organizer": "대학교육혁신원 교육개발센터",
+"sponsorship": ".",
+"application_period": "2023-06-15 ~ 2023-06-25D+60",
+"prize_total": ".",
+"prize_first": ".",
+"website": "https://www.mju.ac.kr/bbs/mjukr/146/200413/artclView.do",
+"details": ".",
+"isSchool": true,
+"viewCount": 0
+}
+
+{
+"title": "명지C.C",
+"photo": "img/교내5.jpg",
+"field": ".",
+"eligibility": ".",
+"organizer": "대학교육혁신원 교육개발센터",
+"sponsorship": ".",
+"application_period": "2023-04-27 ~ 2023-05-07D+109",
+"prize_total": ".",
+"prize_first": ".",
+"website": "https://www.mju.ac.kr/bbs/mjukr/146/200413/artclView.do",
+"details": ".",
+"isSchool": true,
+"viewCount": 0
+}
+
+{
+"title": "IDEA공모전",
+"photo": "img/교내6.jpg",
+"field": ".",
+"eligibility": ".",
+"organizer": "대학교육혁신원 교육개발센터",
+"sponsorship": ".",
+"application_period": "2023-04-05 ~ 2023-04-19D+127",
+"prize_total": ".",
+"prize_first": ".",
+"website": "https://www.mju.ac.kr/bbs/mjukr/146/200413/artclView.do",
+"details": ".",
+"isSchool": true,
+"viewCount": 0
+}
 
 # 유형 모음
 

@@ -17,8 +17,7 @@ class ContestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contest
         fields = '__all__'
-
-        
+      
 class MemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = Member
@@ -102,7 +101,6 @@ class NotificationSerializer(serializers.ModelSerializer):
         model = Notification
         fields = '__all__'
 
-
 #[[[[UserInfo쓰는지 확인]]]]
 class UserInfoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -118,4 +116,9 @@ class UserInfoSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = UserInfo
+        fields = '__all__'
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
         fields = '__all__'

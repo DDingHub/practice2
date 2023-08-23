@@ -16,7 +16,7 @@ class Contest(models.Model):
     details = models.TextField()
     isSchool = models.BooleanField(default=False)
     registration_date = models.DateTimeField(auto_now_add=True, null=True)
-    viewCount = models.PositiveIntegerField(default=0)
+    viewCount = models.PositiveIntegerField(default=0, null=True)
 
     def __str__(self):
         return self.title
