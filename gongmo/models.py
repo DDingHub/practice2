@@ -21,7 +21,6 @@ class Contest(models.Model):
     def __str__(self):
         return self.title
 
-
 class Team(models.Model):
     name = models.CharField(max_length=50)
     teamname = models.CharField(max_length=100,null=True)
@@ -38,7 +37,6 @@ class Team(models.Model):
     plan = models.PositiveIntegerField(default=0)
     design = models.PositiveIntegerField(default=0)
     jickgoon_type = models.CharField(max_length=50, blank=True, choices=[('dev', '개발'), ('plan', '기획'), ('design', '디자인')])
-
 
 class Member(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name = "members")

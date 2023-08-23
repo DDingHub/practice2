@@ -136,6 +136,10 @@ class ContestListAPIView(APIView):
         for contest in contests:
             serialized_contest = ContestSerializer(contest).data
             serialized_contest["is_scrapped"] = contest.id in user_scrapped_contests
+
+            team_count = Team.objects.filter(contest=contest).count()
+            serialized_contest["team_count"] = team_count
+            
             contest_data.append(serialized_contest)
 
         return Response(contest_data)
