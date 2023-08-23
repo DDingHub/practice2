@@ -160,11 +160,25 @@ class DDingContestListAPIView(APIView):
 class ContestDetailAPIView(APIView):
     #공모전 정보와 팀 정보 가져오기
     def get(self, request, contestPk):
+        user = request.user.id
+
         contest = get_object_or_404(Contest, pk=contestPk)
         teams = Team.objects.filter(contest=contest)
-        contest_serializer = ContestSerializer(contest)
-        team_serializer = TeamSerializer(teams, many=True)
-        return Response({'contest': contest_serializer.data, 'teams': team_serializer.data})
+
+        user_scrapped_contests = Scrap.objects.filter(user=user).values_list('contest_id', flat=True)
+        contest_data = []
+        serialized_contest = ContestSerializer(contest).data
+        serialized_contest["is_scrapped"] = contest.id in user_scrapped_contests
+        contest_data.append(serialized_contest)
+
+        user_jjim_teams = Jjim.objects.filter(user=user).values_list('team_id', flat=True)
+        jjim_data=[]
+        for team in teams:
+            serialized_team = TeamSerializer(team).data
+            serialized_team["is_jjim"] = team.id in user_jjim_teams
+            jjim_data.append(serialized_team)
+
+        return Response({'contest': contest_data, 'teams': jjim_data})
     #팀 생성하기
     def post(self, request, contestPk):
         contest = get_object_or_404(Contest, pk=contestPk)
@@ -203,25 +217,16 @@ class ContestDetailAPIView(APIView):
 class TeamDetailAPIView(APIView):
     #팀 세부페이지 가져오기
     def get(self, request, teamPk, contestPk):
+        user = request.user.id
         team = get_object_or_404(Team, pk=teamPk)
-        members = Member.objects.filter(team=team)
-        dev_members = members.filter(jickgoon='dev')
-        plan_members = members.filter(jickgoon='plan')
-        design_members = members.filter(jickgoon='design')
 
-        dev_member_data = [{'user': member.user.username} for member in dev_members]
-        plan_member_data = [{'user': member.user.username} for member in plan_members]
-        design_member_data = [{'user': member.user.username} for member in design_members]
+        user_jjim_teams = Jjim.objects.filter(user=user).values_list('team_id', flat=True)
+        jjim_data=[]
+        serialized_team = TeamSerializer(team).data
+        serialized_team["is_jjim"] = team.id in user_jjim_teams
+        jjim_data.append(serialized_team)
 
-        team_serializer = TeamSerializer(team)
-        data = {
-            **team_serializer.data,
-            'dev_members': dev_member_data,
-            'plan_members': plan_member_data,
-            'design_members': design_member_data,
-        }
-
-        return Response(data)
+        return Response(jjim_data)
 
     #팀 지원하기
     def post(self, request, teamPk, contestPk):
@@ -516,7 +521,7 @@ class NotificationListAPIView(APIView):
 class ScrapCreateAPIView(APIView):
     def post(self,request):
         contest_id = request.data.get("contest")
-        user =request.user
+        user =request.user.id
 
         try:
             scrap = Scrap.objects.get(user=user, contest_id=contest_id)
