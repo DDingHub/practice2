@@ -139,7 +139,7 @@ class ContestListAPIView(APIView):
 
             team_count = Team.objects.filter(contest=contest).count()
             serialized_contest["team_count"] = team_count
-            
+
             contest_data.append(serialized_contest)
 
         return Response(contest_data)
@@ -374,6 +374,19 @@ class MyTeamAPIView(APIView):
         teams_created_serializer = TeamSerializer(teams_created, many=True)
         teams_created_data = teams_created_serializer.data
         for team in teams_created_data:
+            dev_capacity = team.get('dev_capacity', 0)
+            plan_capacity = team.get('plan_capacity', 0)
+            design_capacity = team.get('design_capacity', 0)
+            dev_joined = team.get('dev', 0)
+            plan_joined = team.get('plan', 0)
+            design_joined = team.get('design', 0)
+
+            if dev_capacity == dev_joined and plan_capacity == plan_joined and design_capacity == design_joined:
+                team['isfull'] = True
+            else:
+                team['isfull'] = False
+
+        for team in teams_created_data:
             contest_id = team['contest']
             contest = Contest.objects.get(id=contest_id)
             team['contest_title'] = contest.title
@@ -384,6 +397,7 @@ class MyTeamAPIView(APIView):
 
         applied_count = (responseWait_team_count + accepted_team_count + rejected_team_count)
         created_team_count = len(teams_created_data)
+
 
         applied = {
             "responseWaitTeam": teams_responseWait_data,
