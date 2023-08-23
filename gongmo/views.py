@@ -128,7 +128,7 @@ class ContestListAPIView(APIView):
             contests = Contest.objects.filter(isSchool=False)
             contests = sorted(contests, key=lambda contest: parse_application_period(contest.application_period), reverse=True)
         else:
-            contests = Contest.objects.filter(isSchool=False).order_by('-registration_date')
+            contests = Contest.objects.filter(isSchool=False).order_by('registration_date')
 
         user_scrapped_contests = Scrap.objects.filter(user=user).values_list('contest_id', flat=True)
 
@@ -191,7 +191,7 @@ class ContestDetailAPIView(APIView):
                         "crown": True
                     }
                     serialized_team[member.jickgoon + "_members"] = [member_data]
-                    
+
             team_data.append(serialized_team)
 
         return Response({'contest': contest_data, 'teams': team_data})
@@ -398,6 +398,7 @@ class MyTeamAPIView(APIView):
                 team['isfull'] = True
             else:
                 team['isfull'] = False
+
         for team in teams_created_data:
             contest_id = team['contest']
             contest = Contest.objects.get(id=contest_id)
