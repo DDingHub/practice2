@@ -693,15 +693,18 @@ class ScrapAPIView(APIView):
 class JjimCreateAPIView(APIView):
     def post(self,request):
         team_id = request.data.get("team")
-        user =request.user
+        user_id = 1 #request로 바꾸기
+        user = User.objects.get(id=user_id)
 
         try:
-            jjim = Jjim.objects.get(user=user, team_id=team_id)
+            jjim = Jjim.objects.get(user_id=user_id, team_id=team_id)
+            print(jjim.user)
             jjim.delete() 
             return Response({'message': '찜 취소'}, status=status.HTTP_200_OK)
         except Jjim.DoesNotExist:
             team = get_object_or_404(Team, pk=team_id)
-            jjim = Jjim.objects.create(user=user, team=team)
+            jjim = Jjim.objects.create(user_id=user_id, team=team)
+            print(jjim.user)
 
             jjim_data = {
             "user": user.username,
