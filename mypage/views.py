@@ -16,6 +16,7 @@ from rest_framework import status
 from django.contrib.auth.models import User
 from mypage.models import UserProfile  # mypage 앱의 UserProfile 모델을 임포트
 
+
 class UserMyPageView(APIView):
     permission_classes = [AllowAny]
 
