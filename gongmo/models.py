@@ -15,6 +15,8 @@ class Contest(models.Model):
     website = models.URLField()
     details = models.TextField()
     isSchool = models.BooleanField(default=False)
+    registration_date = models.DateTimeField(auto_now_add=True, null=True)
+    viewCount = models.PositiveIntegerField(default=0, null=True)
 
     def __str__(self):
         return self.title
@@ -25,6 +27,7 @@ class Team(models.Model):
     call = models.CharField(max_length=100,null=True)
     detail = models.TextField(null=True)
     tendency = models.JSONField(default = list)
+    #[[[[[tendency 오류 확인]]]]]
     contest = models.ForeignKey(Contest, on_delete=models.CASCADE)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     dev_capacity = models.PositiveIntegerField(default=0)
@@ -77,3 +80,12 @@ class UserProfile(models.Model):
     portfolio = models.JSONField(null=True, blank=True, default=dict)
     user_type = models.JSONField(null=True, blank=True, default=dict)
     type_message = models.JSONField(null=True, blank=True, default=dict)
+
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(default=timezone.now)
+    message = models.TextField(null=True)
+
+class RejectedTeam(models.Model):
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
