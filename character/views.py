@@ -7,19 +7,28 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-#유형테스트 목록, 유형테스트 등록(db삭제될까봐 만듦)
+#유형테스트 결과페이지
 class CharacterAPIView(APIView):
-    # def get(self,request):
-    #     type_id = request.data.get('typeId')
-    #     characters = Character.objects.filter(id=type_id)
-    #     serializer = CharacterSerializer(characters, many=True)
-    #     return Response(serializer.data)
     def post(self, request):
         type_id = request.data.get('typeID')
-        print(type_id)
+        user_id = 1
+        # user_id = request.user.id
+        # print(type_id)
+        user = User.objects.filter(id=user_id).first()
+        user_name = user.username
         characters = Character.objects.filter(id=type_id)
         serializer = CharacterSerializer(characters, many=True)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        user_data = {
+            'user_name' : user_name
+        }
+
+        response_data = {
+            'character' : serializer.data,
+            'user' : user_data
+        }
+        print(response_data)
+        return Response(response_data, status=status.HTTP_201_CREATED)
 
     # [유형추가]
     # def post(self,request):
@@ -29,28 +38,21 @@ class CharacterAPIView(APIView):
     #         return Response(character_form.cleaned_data, status=status.HTTP_201_CREATED)
     #     return Response(character_form.errors, status=status.HTTP_400_BAD_REQUEST)
     
-#유형테스트 결과 유저한테 보내줌
+
+#유형테스트 - [대표 유형으로 설정하기]
 class MyCharacterAPIView(APIView):
-    def get(self, request):
-        user = request.user
-        my_characters = MyCharacter.objects.filter(user=user)
-        serialized_characters = []
-
-        for my_character in my_characters:
-            serialized_characters.append(CharacterSerializer(my_character.character).data)
-
-        return Response(serialized_characters)
     def post(self, request):
-        user = request.user
-        character_id = request.data.get('character_id')
+        type_id = request.data.get('typeID')
+        user_id = request.user.id
 
-        if character_id:
-            character = get_object_or_404(Character, pk=character_id)
-            my_character, created = MyCharacter.objects.get_or_create(user=user, character=character)
+        existing_data = MyCharacter.objects.filter(user_id=user_id, character_id=type_id).first()
 
-            if created:
-                return Response({"message": "Character assigned successfully."}, status=status.HTTP_201_CREATED)
-            else:
-                return Response({"message": "Character already assigned to the user."}, status=status.HTTP_400_BAD_REQUEST)
+        if existing_data:
+            existing_data.delete()  
+            response_message = "유형테스트 결과가 업데이트 되었습니다."
         else:
-            return Response({"message": "character_id is required."}, status=status.HTTP_400_BAD_REQUEST)
+            my_character = MyCharacter(user_id=user_id, character_id=type_id)
+            my_character.save()
+            response_message = "유형테스트 결과가 저장되었습니다."
+
+        return Response({"message": response_message}, status=status.HTTP_200_OK)

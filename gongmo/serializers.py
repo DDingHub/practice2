@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import *
 
+#[[[[[[UseerInfo쓰는지 확인]]]]]]
 class UserInfo(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     nickname = models.CharField(max_length=50)
@@ -22,10 +23,8 @@ class ContestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contest
         fields = '__all__'
-
-        
+      
 class MemberSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Member
         fields = '__all__'
@@ -50,9 +49,9 @@ class TeamSerializer(serializers.ModelSerializer):
     def get_design_members(self, team):
         design_members = team.members.filter(jickgoon='design')
         return MemberSerializer(design_members, many=True).data
+    #[[[[[[tendency문제 없나 확인]]]]]]
 
 class ScrapSerializer(serializers.ModelSerializer):
-  
     class Meta:
         model = Scrap
         fields = '__all__'
@@ -123,26 +122,22 @@ class SignupSerializer(serializers.ModelSerializer):
 
     
 class JjimSerializer(serializers.ModelSerializer):
-  
     class Meta:
         model = Jjim
         fields = '__all__'
-
-class Notification(models.Model):
-    # Notification 모델 필드들 정의
-    pass
 
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
         fields = '__all__'
 
+#[[[[UserInfo쓰는지 확인]]]]
 class UserInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserInfo
         fields = '__all__'
         
-
+#[[[[[[UserInfo쓰는지확인]]]]]]
 class UserInfoSerializer(serializers.ModelSerializer):
     job = serializers.ListField(child=serializers.CharField())
     hobby = serializers.ListField(child=serializers.CharField())
@@ -151,4 +146,9 @@ class UserInfoSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = UserInfo
+        fields = '__all__'
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
         fields = '__all__'

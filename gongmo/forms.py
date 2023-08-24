@@ -9,6 +9,7 @@ TendencyFormSet = formset_factory(TendencyForm, extra=1)
 
 
 class TeamForm(forms.ModelForm):
+    #[[[[[[[tendency 오류 확인]]]]]]]
     class Meta:
         model = Team
         fields = ["name","teamname","call","detail", "dev_capacity", "plan_capacity", "design_capacity"]
