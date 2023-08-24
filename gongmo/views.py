@@ -358,7 +358,7 @@ class LogoutAPIView(APIView):
 #My팀 보기(지원한 팀, 만든 팀)
 class MyTeamAPIView(APIView):
     def get(self, request):
-        userPk = request.user.id
+        userPk = 1 #request로 수정
 
         #내가 지원한 팀 - 응답 대기
         applications = Application.objects.filter(applicant=userPk, is_approved=False)
@@ -648,17 +648,19 @@ class NotificationListAPIView(APIView):
 
 # 스크랩 하기 (공모전 북마크하기)
 class ScrapCreateAPIView(APIView):
+
     def post(self,request):
         contest_id = request.data.get("contest")
-        user =request.user
+        user_id = 1 #request로 바꾸기
+        user =User.objects.get(id=user_id) 
 
         try:
-            scrap = Scrap.objects.get(user=user, contest_id=contest_id)
+            scrap = Scrap.objects.get(user_id=user_id, contest_id=contest_id)
             scrap.delete() 
             return Response({'message': '스크랩 취소'}, status=status.HTTP_200_OK)
         except Scrap.DoesNotExist:
             contest = get_object_or_404(Contest, pk=contest_id)
-            scrap = Scrap.objects.create(user=user, contest=contest)
+            scrap = Scrap.objects.create(user_id=user_id, contest=contest)
 
             scrap_data = {
             "user": user.username,
