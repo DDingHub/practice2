@@ -155,3 +155,8 @@ REST_FRAMEWORK = {
     ],
     # ...
 }
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.AllowAllUsersModelBackend',
+    'gongmo.backends.EmailBackend',
+]

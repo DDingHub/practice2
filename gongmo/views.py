@@ -26,7 +26,7 @@ from datetime import datetime,timedelta
 from mypage.models import UserProfile
 from .serializers import SignupSerializer
 from rest_framework.authtoken.models import Token
-from .serializers import SignupSerializer
+from .backends import EmailBackend 
 
 
 def generate_jwt_token(user):
@@ -325,6 +325,7 @@ class TeamDetailAPIView(APIView):
             errors.update(team_form.errors)
             return Response({'error': errors}, status=status.HTTP_400_BAD_REQUEST)
         
+
 # 회원가입
 class SignUpAPIView(APIView):
     def post(self, request):
@@ -357,16 +358,16 @@ class SignUpAPIView(APIView):
 
 class LoginAPIView(APIView):
     def post(self, request):
-        username = request.data.get('username')
+        email = request.data.get('email')
         password = request.data.get('password')
 
-        if not username or not password:
-            return Response({'error': '사용자 이름과 비밀번호를 입력해주세요.'}, status=status.HTTP_400_BAD_REQUEST)
+        if not email or not password:
+            return Response({'error': '사용자 이메일과 비밀번호를 입력해주세요.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        user = authenticate(username=username, password=password)
+        user = authenticate(request, email=email, password=password)
 
         if not user:
-            return Response({'error': '잘못된 사용자 이름 또는 비밀번호입니다.'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'error': '잘못된 이메일 또는 비밀번호입니다.'}, status=status.HTTP_401_UNAUTHORIZED)
 
         login(request, user)
 
@@ -393,6 +394,8 @@ class LogoutAPIView(APIView):
             return Response({'message': '로그아웃되었습니다.'}, status=status.HTTP_200_OK)
         else:
             return Response({'error': '로그인되어 있지 않습니다.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
 
 #My팀 보기(지원한 팀, 만든 팀)
 class MyTeamAPIView(APIView):

@@ -25,7 +25,7 @@ pip install requests
 # 로그인 /login
 
 {
-"username": "a",
+"email": "a@mju.ac.kr",
 "password": "a"
 }
 
