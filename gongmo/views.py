@@ -181,7 +181,7 @@ class DDingContestListAPIView(APIView):
 class ContestDetailAPIView(APIView):
     #공모전 정보와 팀 정보 가져오기
     def get(self, request, contestPk):
-        user = request.user.id
+        user = 1
         contest = get_object_or_404(Contest, pk=contestPk)
         teams = Team.objects.filter(contest=contest)
 
@@ -213,6 +213,7 @@ class ContestDetailAPIView(APIView):
     #팀 생성하기
     def post(self, request, contestPk):
         contest = get_object_or_404(Contest, pk=contestPk)
+        print(contestPk)
         team_form = TeamForm(request.data)
         user = 1
         userinfo = get_object_or_404(User, pk=user)
@@ -251,7 +252,7 @@ class ContestDetailAPIView(APIView):
 class TeamDetailAPIView(APIView):
     #팀 세부페이지 가져오기
     def get(self, request, teamPk, contestPk):
-        user = request.user.id
+        user = 1
         team = get_object_or_404(Team, pk=teamPk)
 
         user_jjim_teams = Jjim.objects.filter(user=user).values_list('team_id', flat=True)
@@ -280,6 +281,8 @@ class TeamDetailAPIView(APIView):
     #팀 지원하기
     def post(self, request, teamPk, contestPk):
         team = get_object_or_404(Team, pk=teamPk)
+        userPk =2
+        user = get_object_or_404(User, id=userPk)
         jickgoon_type = request.data.get("jickgoon_type")
 
 
@@ -297,10 +300,10 @@ class TeamDetailAPIView(APIView):
             return Response({"error": "이미 꽉찬 직군입니다."},
                             status=status.HTTP_400_BAD_REQUEST)
         
-        application = Application.objects.create(team=team, applicant=request.user, jickgoon=jickgoon_type)
+        application = Application.objects.create(team=team, applicant=user, jickgoon=jickgoon_type)
 
-        if team.created_by != request.user:
-            applicant_name = request.user.username
+        if team.created_by != user:
+            applicant_name = user.username
             team_name = team.name
             Notification.objects.create(user=team.created_by, applicant=applicant_name, type="요청", team=team_name)
 
@@ -366,7 +369,7 @@ class LoginAPIView(APIView):
         if not email or not password:
             return Response({'error': '사용자 이메일과 비밀번호를 입력해주세요.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        user = authenticate(request, email=email, password=password)
+        user = authenticate(email=email, password=password)
 
         if not user:
             return Response({'error': '잘못된 이메일 또는 비밀번호입니다.'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -375,7 +378,6 @@ class LoginAPIView(APIView):
 
         # Token 생성
         token = generate_jwt_token(user)
-        print("토큰 : ",token)
 
         user_data = {
             "id": user.id,
@@ -403,6 +405,7 @@ class LogoutAPIView(APIView):
 class MyTeamAPIView(APIView):
     def get(self, request):
         user = request.user.id
+        print(user)
 
         #내가 지원한 팀 - 응답 대기
         applications = Application.objects.filter(applicant=user, is_approved=False)
@@ -694,7 +697,7 @@ class ScrapCreateAPIView(APIView):
 
     def post(self,request):
         contest_id = request.data.get("contest")
-        user_id = 1 #request로 바꾸기
+        user_id =  1#request로 바꾸기
         user =User.objects.get(id=user_id) 
 
         try:
@@ -714,7 +717,7 @@ class ScrapCreateAPIView(APIView):
 #스크랩목록보기
 class ScrapAPIView(APIView):
     def get(self, request):
-        user = 1
+        user = request.user.id
         scraps = Scrap.objects.filter(user=user).select_related('contest')  # Scrap 객체에 연결된 Contest 객체 함께 로드
 
         response_data = []
