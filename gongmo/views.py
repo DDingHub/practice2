@@ -728,7 +728,7 @@ class ScrapCreateAPIView(APIView):
 #스크랩목록보기
 class ScrapAPIView(APIView):
     def get(self, request):
-        user = request.user.id
+        user = 1
         scraps = Scrap.objects.filter(user=user).select_related('contest')  # Scrap 객체에 연결된 Contest 객체 함께 로드
 
         response_data = []
