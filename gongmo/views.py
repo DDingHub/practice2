@@ -214,18 +214,19 @@ class ContestDetailAPIView(APIView):
     def post(self, request, contestPk):
         contest = get_object_or_404(Contest, pk=contestPk)
         team_form = TeamForm(request.data)
-        user = request.user.id
+        user = 1
+        userinfo = get_object_or_404(User, pk=user)
         print(user)
 
         if team_form.is_valid():
             leaderJickgoon = request.data.get('leaderJickgoon')
             team = team_form.save(commit=False)
             team.contest = contest
-            team.created_by = user
+            team.created_by = userinfo
             #[[[[[tendency수정필요]]]]]
             team.save()
 
-            Member.objects.create(team=team, user=user, jickgoon=leaderJickgoon)    
+            Member.objects.create(team=team, user=userinfo, jickgoon=leaderJickgoon)    
 
             if leaderJickgoon == 'dev':
               team.dev += 1
@@ -328,7 +329,6 @@ class TeamDetailAPIView(APIView):
             errors.update(team_form.errors)
             return Response({'error': errors}, status=status.HTTP_400_BAD_REQUEST)
         
-
 # 회원가입
 class SignUpAPIView(APIView):
     def post(self, request):
@@ -761,7 +761,6 @@ class JjimCreateAPIView(APIView):
 class JjimAPIView(APIView):
     def get(self, request):
         user = 1
-        print(user)
         jjims = Jjim.objects.filter(user=user).select_related('team')  # Jjim 객체에 연결된 Team 객체 함께 로드
 
         response_data = []
@@ -803,28 +802,3 @@ class JjimAPIView(APIView):
         }
 
         return Response(response, status=status.HTTP_200_OK)
-
-#[[[[[유저 정보받기 필요?]]]]]
-class UserInfoAPIView(APIView):
-    def post(self, request):
-        data = request.data.copy()
-        data['user'] = request.user.id
-
-        serializer = UserInfoSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save(user=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-#팀 생성페이지에서 생성자정보 보여주기
-class TeamCreatePageAPIView(APIView):
-    def get(self, request):
-        user = request.user
-        try:
-            profile = UserProfile.objects.get(user=user)
-        except UserProfile.DoesNotExist:
-            return Response({"error": "UserProfile not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        serializer = UserProfileSerializer(profile)  # 시리얼라이저를 사용하여 데이터를 직렬화합니다
-
-        return Response(serializer.data)

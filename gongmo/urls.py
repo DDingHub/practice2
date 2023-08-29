@@ -20,10 +20,6 @@ urlpatterns = [
     path("<int:contestPk>/", views.ContestDetailAPIView.as_view(), 
     name="contestDetail"),
 
-    #팀 생성페이지
-    path("teamCreatePage/", views.TeamCreatePageAPIView.as_view(), 
-    name="teamCreatePage"),
-
     #팀 세부페이지(팀 지원)
     path("<int:contestPk>/<int:teamPk>/", views.TeamDetailAPIView.as_view(), name="teamDetail"),
 
@@ -51,7 +47,4 @@ urlpatterns = [
     #알림보기
     path("notification/", views.NotificationListAPIView.as_view(), name="notification"),
 
-    #[[[[[[userInfo필요한지 확인]]]]]]
-    #유저정보넣기
-    path('userInfo/',views.UserInfoAPIView.as_view(), name='userInfo'),
 ]

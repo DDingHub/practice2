@@ -14,7 +14,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.models import User
-from mypage.models import UserProfile  # mypage 앱의 UserProfile 모델을 임포트
+from .serializers import *
+from gongmo.models import *
 
 class UserMyPageView(APIView):
     permission_classes = [AllowAny]
@@ -55,9 +56,39 @@ class UserMyPageView(APIView):
 
 class UserProfileJsonView(APIView):
     def get(self, request, *args, **kwargs):
-        user_profile = UserProfile.objects.filter(user=request.user).first()
+        user = 1
+        user_profile = UserProfile.objects.filter(user=user).first()
         if not user_profile:
             return Response({"error": "User profile not found"}, status=status.HTTP_404_NOT_FOUND)
 
         serializer = UserProfileSerializer(user_profile)  # 시리얼라이저로 데이터 변환
-        return Response(serializer.data)
+
+        applications = Application.objects.filter(applicant=user, is_approved=False)
+        responseWait_team_count = len(applications)
+        teams_join = Team.objects.filter(members__user=user)
+        accepted_team_count = len(teams_join)
+        teams_rejected = RejectedTeam.objects.filter(user=user)
+        rejected_team_count = len(teams_rejected)
+
+        applied_count = (responseWait_team_count + accepted_team_count + rejected_team_count)
+
+
+        jjims = Jjim.objects.filter(user=user).select_related('team')
+        total_teams = len(jjims)
+
+        scraps = Scrap.objects.filter(user=user).select_related('contest')
+        total_scraps = len(scraps)
+
+        response_data = {
+            "user_profile": serializer.data,
+            "my_teams": applied_count,
+            "jjim_teams": total_teams,
+            "scrap_contests": total_scraps,
+        }
+
+        return Response(response_data)
+
+
+
+
+
