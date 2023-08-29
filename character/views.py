@@ -6,16 +6,15 @@ from django.contrib.auth.models import User
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from mypage.models import UserProfile
 
 #유형테스트 결과페이지
 class CharacterAPIView(APIView):
     def post(self, request):
         type_id = request.data.get('typeID')
         user_id = 1
-        # user_id = request.user.id
-        # print(type_id)
-        user = User.objects.filter(id=user_id).first()
-        user_name = user.username
+        profile = UserProfile.objects.filter(user=user_id).first()
+        user_name = profile.nickname
         characters = Character.objects.filter(id=type_id)
         serializer = CharacterSerializer(characters, many=True)
 
@@ -43,7 +42,7 @@ class CharacterAPIView(APIView):
 class MyCharacterAPIView(APIView):
     def post(self, request):
         type_id = request.data.get('typeID')
-        user_id = request.user.id
+        user_id = 1
 
         existing_data = MyCharacter.objects.filter(user_id=user_id, character_id=type_id).first()
 
