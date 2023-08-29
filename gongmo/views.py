@@ -246,7 +246,7 @@ class ContestDetailAPIView(APIView):
             errors.update(team_form.errors)
             return Response({'error': errors}, status=status.HTTP_400_BAD_REQUEST)
 
-#팀 세부페이지
+#팀 세부페이지, 지원하기
 class TeamDetailAPIView(APIView):
     #팀 세부페이지 가져오기
     def get(self, request, teamPk, contestPk):
@@ -299,8 +299,9 @@ class TeamDetailAPIView(APIView):
         application = Application.objects.create(team=team, applicant=request.user, jickgoon=jickgoon_type)
 
         if team.created_by != request.user:
-            notification_message = f"{request.user.username}님 {team.name}의 팀원이 되고 싶어해요!"
-            Notification.objects.create(user=team.created_by, message=notification_message, type="팀원 할래요")
+            applicant_name = request.user.username
+            team_name = team.name
+            Notification.objects.create(user=team.created_by, applicant=applicant_name, type="요청", team=team_name)
 
         return Response({"message": "팀 지원이 완료되었습니다. 팀장의 승인을 기다려주세요."},status=status.HTTP_201_CREATED)
 
@@ -397,7 +398,6 @@ class LogoutAPIView(APIView):
             return Response({'message': '로그아웃되었습니다.'}, status=status.HTTP_200_OK)
         else:
             return Response({'error': '로그인되어 있지 않습니다.'}, status=status.HTTP_401_UNAUTHORIZED)
-
 
 
 #My팀 보기(지원한 팀, 만든 팀)
@@ -649,7 +649,7 @@ class TeamAcceptOrRejectAPIView(APIView):
             applicant = application.applicant
             team = application.team
             notification_message = f"{team.name} 팀에서 팀 요청을 수락했어요!"
-            Notification.objects.create(user=applicant, message=notification_message, type="요청 결과")
+            Notification.objects.create(user=applicant, message=notification_message, type="수락")
 
             if application.jickgoon == 'dev':
               team.dev += 1
@@ -667,7 +667,7 @@ class TeamAcceptOrRejectAPIView(APIView):
             applicant = application.applicant
             team = application.team
             notification_message = f"{team.name} 팀에서 팀 요청을 거절했어요"
-            Notification.objects.create(user=applicant, message=notification_message, type="요청 결과")
+            Notification.objects.create(user=applicant, message=notification_message, type="거절")
             RejectedTeam.objects.create(user=applicant,team=team)
             application.delete()
             return Response({"message": "신청이 거절되었습니다."}, status=status.HTTP_200_OK)
@@ -675,7 +675,7 @@ class TeamAcceptOrRejectAPIView(APIView):
 # 알림
 class NotificationListAPIView(APIView):
     def get(self, request):
-        userPk = request.user.id
+        userPk = 1
         user = get_object_or_404(User, pk=userPk)
         notifications = Notification.objects.filter(user=user).order_by('-created_at')
         serializer = NotificationSerializer(notifications, many=True)
