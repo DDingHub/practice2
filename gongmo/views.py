@@ -177,7 +177,7 @@ class DDingContestListAPIView(APIView):
     #         return Response(dding_contest_form.cleaned_data, status=status.HTTP_201_CREATED)
     #     return Response(dding_contest_form.errors, status=status.HTTP_400_BAD_REQUEST)
 
-#공모전 세부페이지
+#공모전 세부페이지, 팀생성
 class ContestDetailAPIView(APIView):
     #공모전 정보와 팀 정보 가져오기
     def get(self, request, contestPk):
@@ -214,16 +214,18 @@ class ContestDetailAPIView(APIView):
     def post(self, request, contestPk):
         contest = get_object_or_404(Contest, pk=contestPk)
         team_form = TeamForm(request.data)
+        user = request.user.id
+        print(user)
 
         if team_form.is_valid():
             leaderJickgoon = request.data.get('leaderJickgoon')
             team = team_form.save(commit=False)
             team.contest = contest
-            team.created_by = request.user
+            team.created_by = user
             #[[[[[tendency수정필요]]]]]
             team.save()
 
-            Member.objects.create(team=team, user=request.user, jickgoon=leaderJickgoon)    
+            Member.objects.create(team=team, user=user, jickgoon=leaderJickgoon)    
 
             if leaderJickgoon == 'dev':
               team.dev += 1
@@ -384,6 +386,7 @@ class LoginAPIView(APIView):
             "user": user_data,
             "access": token  # 생성된 토큰 값을 응답에 포함
         }
+        print(response_data)
         
         return Response(response_data, status=status.HTTP_201_CREATED)
 # 로그아웃
@@ -400,10 +403,10 @@ class LogoutAPIView(APIView):
 #My팀 보기(지원한 팀, 만든 팀)
 class MyTeamAPIView(APIView):
     def get(self, request):
-        userPk = 1 #request로 수정
+        user = request.user.id
 
         #내가 지원한 팀 - 응답 대기
-        applications = Application.objects.filter(applicant=userPk, is_approved=False)
+        applications = Application.objects.filter(applicant=user, is_approved=False)
         responseWait_team_ids = applications.values_list('team', flat=True)
         teams_responseWait = Team.objects.filter(id__in=responseWait_team_ids)
         teams_responseWait_data = []
@@ -413,7 +416,7 @@ class MyTeamAPIView(APIView):
             team_data['applyJickgoon'] = application.jickgoon
             team_data['contest_title'] = team.contest.title
 
-            jjim_exists = Jjim.objects.filter(user=request.user, team=team).exists()
+            jjim_exists = Jjim.objects.filter(user=user, team=team).exists()
             team_data['is_jjim'] = jjim_exists
 
             for dev_member in team_data['dev_members']:
@@ -435,10 +438,9 @@ class MyTeamAPIView(APIView):
                     design_member['crown'] = False
             teams_responseWait_data.append(team_data)
             
-
         #내가 지원한 팀 - 수락됨
-        teams_joined = Team.objects.filter(members__user=userPk)
-        teams_accepted = teams_joined.exclude(created_by=userPk)
+        teams_joined = Team.objects.filter(members__user=user)
+        teams_accepted = teams_joined.exclude(created_by=user)
         teams_accepted_serializer = TeamSerializer(teams_accepted, many=True)
         teams_accepted_data = teams_accepted_serializer.data
         for team in teams_accepted_data:
@@ -463,11 +465,11 @@ class MyTeamAPIView(APIView):
                 else:
                     design_member['crown'] = False
             
-            jjim_exists = Jjim.objects.filter(user=request.user, team_id=team['id']).exists()
+            jjim_exists = Jjim.objects.filter(user=user, team_id=team['id']).exists()
             team['is_jjim'] = jjim_exists
 
         #내가 지원한 팀 - 거절됨
-        teams_rejected = RejectedTeam.objects.filter(user=userPk)
+        teams_rejected = RejectedTeam.objects.filter(user=user)
         rejected_team_ids = teams_rejected.values_list('team', flat=True)
         teams_rejected_info = Team.objects.filter(id__in=rejected_team_ids)
         teams_rejected_serializer = TeamSerializer(teams_rejected_info, many=True)
@@ -494,11 +496,11 @@ class MyTeamAPIView(APIView):
                 else:
                     design_member['crown'] = False
 
-            jjim_exists = Jjim.objects.filter(user=request.user, team_id=team['id']).exists()
+            jjim_exists = Jjim.objects.filter(user=user, team_id=team['id']).exists()
             team['is_jjim'] = jjim_exists
 
         #내가 만든 팀
-        teams_created = Team.objects.filter(created_by=userPk)
+        teams_created = Team.objects.filter(created_by=user)
         teams_created_serializer = TeamSerializer(teams_created, many=True)
         teams_created_data = teams_created_serializer.data
         for team in teams_created_data:
@@ -736,9 +738,10 @@ class ScrapAPIView(APIView):
 # 찜하기 (팀 찜하기)
 class JjimCreateAPIView(APIView):
     def post(self,request):
+    #     if not request.user.is_authenticated:
+    #         return Response({'error': '로그인이 필요합니다.'}, status=status.HTTP_401_UNAUTHORIZED)
         team_id = request.data.get("team")
-        user_id = 1 #request로 바꾸기
-        user = User.objects.get(id=user_id)
+        user_id = 1
 
         try:
             jjim = Jjim.objects.get(user_id=user_id, team_id=team_id)
@@ -751,15 +754,15 @@ class JjimCreateAPIView(APIView):
             print(jjim.user)
 
             jjim_data = {
-            "user": user.username,
-            "team": team.teamname
+            "team": team.id
             }
             return Response({'message': jjim_data}, status=status.HTTP_201_CREATED)
 
 #찜 목록보기
 class JjimAPIView(APIView):
     def get(self, request):
-        user = request.user
+        user = 1
+        print(user)
         jjims = Jjim.objects.filter(user=user).select_related('team')  # Jjim 객체에 연결된 Team 객체 함께 로드
 
         response_data = []
