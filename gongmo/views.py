@@ -215,7 +215,7 @@ class ContestDetailAPIView(APIView):
         contest = get_object_or_404(Contest, pk=contestPk)
         print(contestPk)
         team_form = TeamForm(request.data)
-        user = 1
+        user = 2
         userinfo = get_object_or_404(User, pk=user)
         print(user)
 
@@ -253,7 +253,9 @@ class TeamDetailAPIView(APIView):
     #팀 세부페이지 가져오기
     def get(self, request, teamPk, contestPk):
         user = 1
+        userinfo = get_object_or_404(User, pk=user)
         team = get_object_or_404(Team, pk=teamPk)
+        character = get_object_or_404(UserProfile, user=userinfo)
 
         user_jjim_teams = Jjim.objects.filter(user=user).values_list('team_id', flat=True)
         jjim_data=[]
@@ -275,13 +277,16 @@ class TeamDetailAPIView(APIView):
                 serialized_team["design_members"] = [member_data]
 
         serialized_team["member_count"] = team.members.count() 
+        serialized_team["nickname"] = character.nickname
+        serialized_team["jickgoon"] = character.job
+        serialized_team["major"] = character.major
         jjim_data.append(serialized_team)
         return Response(jjim_data)
 
     #팀 지원하기
     def post(self, request, teamPk, contestPk):
         team = get_object_or_404(Team, pk=teamPk)
-        userPk =2
+        userPk =1
         user = get_object_or_404(User, id=userPk)
         jickgoon_type = request.data.get("jickgoon_type")
 
@@ -404,8 +409,9 @@ class LogoutAPIView(APIView):
 #My팀 보기(지원한 팀, 만든 팀)
 class MyTeamAPIView(APIView):
     def get(self, request):
-        user = request.user.id
+        user = 1
         print(user)
+        all_data = []
 
         #내가 지원한 팀 - 응답 대기
         applications = Application.objects.filter(applicant=user, is_approved=False)
@@ -439,6 +445,7 @@ class MyTeamAPIView(APIView):
                 else:
                     design_member['crown'] = False
             teams_responseWait_data.append(team_data)
+            all_data.append(team_data)
             
         #내가 지원한 팀 - 수락됨
         teams_joined = Team.objects.filter(members__user=user)
@@ -446,6 +453,7 @@ class MyTeamAPIView(APIView):
         teams_accepted_serializer = TeamSerializer(teams_accepted, many=True)
         teams_accepted_data = teams_accepted_serializer.data
         for team in teams_accepted_data:
+            all_data.append(team)
             contest_id = team['contest']
             contest = Contest.objects.get(id=contest_id)
             team['contest_title'] = contest.title
@@ -477,6 +485,7 @@ class MyTeamAPIView(APIView):
         teams_rejected_serializer = TeamSerializer(teams_rejected_info, many=True)
         teams_rejected_data = teams_rejected_serializer.data
         for team in teams_rejected_data:
+            all_data.append(team)
             contest_id = team['contest']
             contest = Contest.objects.get(id=contest_id)
             team['contest_title'] = contest.title
@@ -549,7 +558,9 @@ class MyTeamAPIView(APIView):
         applied_count = (responseWait_team_count + accepted_team_count + rejected_team_count)
         created_team_count = len(teams_created_data)
 
+
         applied = {
+            "all" : all_data,
             "responseWaitTeam": teams_responseWait_data,
             "acceptedTeam": teams_accepted_data,
             "rejectedTeam": teams_rejected_data,

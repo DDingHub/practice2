@@ -131,23 +131,6 @@ class NotificationSerializer(serializers.ModelSerializer):
         model = Notification
         fields = '__all__'
 
-#[[[[UserInfo쓰는지 확인]]]]
-class UserInfoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UserInfo
-        fields = '__all__'
-        
-#[[[[[[UserInfo쓰는지확인]]]]]]
-class UserInfoSerializer(serializers.ModelSerializer):
-    job = serializers.ListField(child=serializers.CharField())
-    hobby = serializers.ListField(child=serializers.CharField())
-    dream = serializers.ListField(child=serializers.CharField())
-    tendency_personality = serializers.ListField(child=serializers.CharField())
-    
-    class Meta:
-        model = UserInfo
-        fields = '__all__'
-
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
