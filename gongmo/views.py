@@ -360,7 +360,6 @@ class LoginAPIView(APIView):
     def post(self, request):
         email = request.data.get('email')
         password = request.data.get('password')
-
         if not email or not password:
             return Response({'error': '사용자 이메일과 비밀번호를 입력해주세요.'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -373,6 +372,7 @@ class LoginAPIView(APIView):
 
         # Token 생성
         token = generate_jwt_token(user)
+        print("토큰 : ",token)
 
         user_data = {
             "id": user.id,
