@@ -31,7 +31,7 @@ from .serializers import SignupSerializer
 
 def generate_jwt_token(user):
     secret_key = settings.SECRET_KEY  # 시크릿 키 설정
-    expiration_time = datetime.datetime.utcnow() + datetime.timedelta(days=1)  # 1일 후 만료
+    expiration_time = datetime.utcnow() + timedelta(days=1)  # 1일 후 만료
 
     payload = {
         'user_id': user.id,

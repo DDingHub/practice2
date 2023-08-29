@@ -3,16 +3,23 @@ pip install requests
 # 회원가입 /signup
 
 {
-"username": "e",
-"password": "e",
+"username": "a",
+"password": "a",
 "job":["응"],
 "hobby":["응응"],
 "dream":["응응응"],
 "tendency_worktime":"응응응",
 "tendency_personality": ["응"],
 "tendency_MBTI": "응",
-"email":"e@mju.ac.kr",
-"major":"데이터테크놀로지"
+"email":"a@mju.ac.kr",
+"major":"데이터테크놀로지",
+"nickname":"해준",
+"call":"비밀",
+"languages_tools":["파이썬"],
+"introduce":"바보아니다",
+"portfolio":"https://github.com/DDingHub/practice2",
+"user_type":"커뮤니케이터",
+"type_message":"우리 팀의 소통은 내가 책임진다!"
 }
 
 # 로그인 /login
