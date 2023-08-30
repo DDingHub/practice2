@@ -170,12 +170,12 @@ class DDingContestListAPIView(APIView):
         serializer = ContestSerializer(dding_contests, many=True)
         return Response(serializer.data)
 
-    # def post(self,request):
-    #     dding_contest_form = DDingContestForm(request.data)
-    #     if dding_contest_form.is_valid():
-    #         dding_contest_form.save()
-    #         return Response(dding_contest_form.cleaned_data, status=status.HTTP_201_CREATED)
-    #     return Response(dding_contest_form.errors, status=status.HTTP_400_BAD_REQUEST)
+    def post(self,request):
+        dding_contest_form = DDingContestForm(request.data)
+        if dding_contest_form.is_valid():
+            dding_contest_form.save()
+            return Response(dding_contest_form.cleaned_data, status=status.HTTP_201_CREATED)
+        return Response(dding_contest_form.errors, status=status.HTTP_400_BAD_REQUEST)
 
 #공모전 세부페이지, 팀생성
 class ContestDetailAPIView(APIView):
@@ -215,7 +215,7 @@ class ContestDetailAPIView(APIView):
         contest = get_object_or_404(Contest, pk=contestPk)
         print(contestPk)
         team_form = TeamForm(request.data)
-        user = 2
+        user = 1
         userinfo = get_object_or_404(User, pk=user)
         print(user)
 
@@ -290,7 +290,6 @@ class TeamDetailAPIView(APIView):
         user = get_object_or_404(User, id=userPk)
         jickgoon_type = request.data.get("jickgoon_type")
 
-
         if jickgoon_type not in ['dev', 'plan', 'design']:
             return Response({"error": "유효하지 않은 직군입니다."},
                             status=status.HTTP_400_BAD_REQUEST)
@@ -309,7 +308,7 @@ class TeamDetailAPIView(APIView):
 
         if team.created_by != user:
             applicant_name = user.username
-            team_name = team.name
+            team_name = team.teamname
             Notification.objects.create(user=team.created_by, applicant=applicant_name, type="요청", team=team_name)
 
         return Response({"message": "팀 지원이 완료되었습니다. 팀장의 승인을 기다려주세요."},status=status.HTTP_201_CREATED)
@@ -649,20 +648,19 @@ class TeamMemberDeleteAPIView(APIView):
 # 지원자 수락 또는 거절
 class TeamAcceptOrRejectAPIView(APIView):
     def post(self, request):
-        userPk = request.user.id
+        userPk = 3
         user = get_object_or_404(User, pk=userPk)
-        applicantion_id = request.data.get("applicantion_id")
+        application_id = request.data.get("application_id")
         is_approved = request.data.get("is_approved")
 
-        application = get_object_or_404(Application, id=applicantion_id, team__created_by=user)
+        application = get_object_or_404(Application, id=application_id, team__created_by=user)
 
         if is_approved == "true":
             application.is_approved = True
             application.save()
             applicant = application.applicant
             team = application.team
-            notification_message = f"{team.name} 팀에서 팀 요청을 수락했어요!"
-            Notification.objects.create(user=applicant, message=notification_message, type="수락")
+            Notification.objects.create(user=applicant, team=team.teamname, type="수락")
 
             if application.jickgoon == 'dev':
               team.dev += 1
@@ -679,8 +677,7 @@ class TeamAcceptOrRejectAPIView(APIView):
         else:
             applicant = application.applicant
             team = application.team
-            notification_message = f"{team.name} 팀에서 팀 요청을 거절했어요"
-            Notification.objects.create(user=applicant, message=notification_message, type="거절")
+            Notification.objects.create(user=applicant, team=team.teamname, type="거절")
             RejectedTeam.objects.create(user=applicant,team=team)
             application.delete()
             return Response({"message": "신청이 거절되었습니다."}, status=status.HTTP_200_OK)

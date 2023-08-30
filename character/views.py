@@ -10,32 +10,32 @@ from mypage.models import UserProfile
 
 #유형테스트 결과페이지
 class CharacterAPIView(APIView):
-    def post(self, request):
-        type_id = request.data.get('typeID')
-        user_id = 1
-        profile = UserProfile.objects.filter(user=user_id).first()
-        user_name = profile.nickname
-        characters = Character.objects.filter(id=type_id)
-        serializer = CharacterSerializer(characters, many=True)
+    # def post(self, request):
+    #     type_id = request.data.get('typeID')
+    #     user_id = 1
+    #     profile = UserProfile.objects.filter(user=user_id).first()
+    #     user_name = profile.nickname
+    #     characters = Character.objects.filter(id=type_id)
+    #     serializer = CharacterSerializer(characters, many=True)
 
-        user_data = {
-            'user_name' : user_name
-        }
+    #     user_data = {
+    #         'user_name' : user_name
+    #     }
 
-        response_data = {
-            'character' : serializer.data,
-            'user' : user_data
-        }
-        print(response_data)
-        return Response(response_data, status=status.HTTP_201_CREATED)
+    #     response_data = {
+    #         'character' : serializer.data,
+    #         'user' : user_data
+    #     }
+    #     print(response_data)
+    #     return Response(response_data, status=status.HTTP_201_CREATED)
 
     # [유형추가]
-    # def post(self,request):
-    #     character_form = CharacterForm(request.data)
-    #     if character_form.is_valid():
-    #         character_form.save()
-    #         return Response(character_form.cleaned_data, status=status.HTTP_201_CREATED)
-    #     return Response(character_form.errors, status=status.HTTP_400_BAD_REQUEST)
+    def post(self,request):
+        character_form = CharacterForm(request.data)
+        if character_form.is_valid():
+            character_form.save()
+            return Response(character_form.cleaned_data, status=status.HTTP_201_CREATED)
+        return Response(character_form.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
 #유형테스트 - [대표 유형으로 설정하기]
